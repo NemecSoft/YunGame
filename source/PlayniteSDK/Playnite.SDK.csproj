@@ -10,6 +10,8 @@
     <RootNamespace>Playnite.SDK</RootNamespace>
     <AssemblyName>Playnite.SDK</AssemblyName>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+	<LangVersion>default</LangVersion>
+	<LangVersion>default</LangVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

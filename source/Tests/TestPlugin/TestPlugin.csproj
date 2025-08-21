@@ -10,6 +10,7 @@
     <RootNamespace>TestPlugin</RootNamespace>
     <AssemblyName>TestPlugin</AssemblyName>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+	<LangVersion>default</LangVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

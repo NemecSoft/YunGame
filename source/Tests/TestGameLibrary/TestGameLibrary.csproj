@@ -10,6 +10,7 @@
     <RootNamespace>TestGameLibrary</RootNamespace>
     <AssemblyName>TestGameLibrary</AssemblyName>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+	<LangVersion>default</LangVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

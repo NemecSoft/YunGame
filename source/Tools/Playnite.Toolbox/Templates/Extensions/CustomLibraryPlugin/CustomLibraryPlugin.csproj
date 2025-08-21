@@ -9,6 +9,7 @@
     <RootNamespace>_namespace_</RootNamespace>
     <AssemblyName>_name_</AssemblyName>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+	<LangVersion>default</LangVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
     <ProjectGuid>{2351B5C1-6E28-4B79-A1D9-90FDA53B5417}</ProjectGuid>
