@@ -1,4 +1,16 @@
-﻿using Hardcodet.Wpf.TaskbarNotification;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media.Imaging;
+using Hardcodet.Wpf.TaskbarNotification;
 using Playnite.API;
 using Playnite.Common;
 using Playnite.Controllers;
@@ -18,18 +30,6 @@ using Playnite.Settings;
 using Playnite.ViewModels;
 using Playnite.WebView;
 using Playnite.Windows;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media.Imaging;
 
 namespace Playnite.DesktopApp
 {
@@ -50,15 +50,26 @@ namespace Playnite.DesktopApp
             }
         }
 
-        public new static DesktopApplication Current
+        public static new DesktopApplication Current
         {
-            get => PlayniteApplication.Current == null ? null : (DesktopApplication)PlayniteApplication.Current;
+            get =>
+                PlayniteApplication.Current == null
+                    ? null
+                    : (DesktopApplication)PlayniteApplication.Current;
         }
 
-        public DesktopApplication(Func<Application> appInitializer, SplashScreen splashScreen, CmdLineOptions cmdLine)
-            : base(appInitializer, ApplicationMode.Desktop, cmdLine)
+        // 命令行参数属性，预留供将来自定义功能使用
+        public CmdLineOptions CmdLine { get; private set; }
+
+        public DesktopApplication(
+            Func<Application> appInitializer,
+            SplashScreen splashScreen,
+            CmdLineOptions cmdLineOptions
+        )
+            : base(appInitializer, ApplicationMode.Desktop, cmdLineOptions)
         {
             this.splashScreen = splashScreen;
+            this.CmdLine = cmdLineOptions; // 存储参数但不做处理
         }
 
         public override void ConfigureViews()
@@ -87,10 +98,10 @@ namespace Playnite.DesktopApp
             MigrateDatabase();
             OpenMainViewAsync(isFirstStart);
             LoadTrayIcon();
-#pragma warning disable CS4014
-            StartUpdateCheckerAsync();
-#pragma warning restore CS4014
-            ProcessArguments();
+            // 已禁用启动时检查更新
+            //#pragma warning disable CS4014
+            //StartUpdateCheckerAsync();
+            //#pragma warning restore CS4014
             splashScreen?.Close(new TimeSpan(0));
             return true;
         }
@@ -119,14 +130,19 @@ namespace Playnite.DesktopApp
 
         public override void Restart(bool saveSettings)
         {
-            Restart(new CmdLineOptions { MasterInstance = true }, saveSettings);
+            // 预留参数支持：将来可使用CmdLine属性中的参数
+            QuitAndStart(
+                PlaynitePaths.DesktopExecutablePath,
+                string.Empty,
+                saveSettings: saveSettings
+            );
         }
 
         public override void Restart(CmdLineOptions options, bool saveSettings)
         {
-            options.MasterInstance = true;
-            options.UserDataDir = CmdLine.UserDataDir;
-            QuitAndStart(PlaynitePaths.DesktopExecutablePath, options.ToString(), saveSettings: saveSettings);
+            // 存储新参数但不做处理，预留供将来自定义功能使用
+            this.CmdLine = options;
+            Restart(saveSettings);
         }
 
         public override void InstantiateApp()
@@ -142,7 +158,8 @@ namespace Playnite.DesktopApp
                 Dialogs,
                 Extensions,
                 this,
-                new DesktopActionSelector());
+                new DesktopActionSelector()
+            );
             Game.DatabaseReference = Database;
             ImageSourceManager.SetDatabase(Database);
             MainModel = new DesktopAppViewModel(
@@ -153,7 +170,8 @@ namespace Playnite.DesktopApp
                 AppSettings,
                 (DesktopGamesEditor)GamesEditor,
                 Extensions,
-                this);
+                this
+            );
             PlayniteApiGlobal = GetApiInstance();
             SDK.API.Instance = PlayniteApiGlobal;
         }
@@ -170,7 +188,7 @@ namespace Playnite.DesktopApp
                         DoubleClickCommand = MainModel.ShowWindowCommand,
                         Icon = GetTrayIcon(),
                         Visibility = Visibility.Visible,
-                        ContextMenu = new TrayContextMenu(MainModel)
+                        ContextMenu = new TrayContextMenu(MainModel),
                     };
                 }
                 catch (Exception e) when (!PlayniteEnvironment.ThrowAllErrors)
@@ -186,14 +204,50 @@ namespace Playnite.DesktopApp
             {
                 Extensions.LoadPlugins(
                     AppSettings.DisabledPlugins,
-                    CmdLine.SafeStartup,
-                    AppSettings.DevelExtenions.Where(a => a.Selected == true).Select(a => a.Item).ToList());
+                    false, // 不再使用安全启动模式
+                    AppSettings
+                        .DevelExtenions.Where(a => a.Selected == true)
+                        .Select(a => a.Item)
+                        .ToList()
+                );
+
+                // 检查是否加载了YunGameGeneric插件（包括任何包含该名称的变体）
+                // var yunGamePlugin = Extensions.Plugins.Values.FirstOrDefault(p =>
+                //     (p.Description.Type == ExtensionType.GenericPlugin)
+                //     && (
+                //         p.Description.Name.Contains(
+                //             "YunGameGeneric",
+                //             StringComparison.OrdinalIgnoreCase
+                //         )
+                //         || p.Description.Id.Contains(
+                //             "YunGameGeneric",
+                //             StringComparison.OrdinalIgnoreCase
+                //         )
+                //     )
+                // );
+                // if (yunGamePlugin == null)
+                // {
+                //     MessageBox.Show(
+                //         // "未检测到YunGameGeneric插件，请安装该插件后再启动应用。",
+                //         // "插件缺失",
+                //         "核心文件缺失，应用即将关闭！请确保没有修改核心文件，联系管理员。",
+
+                //         "错误",
+                //         MessageBoxButton.OK,
+                //         MessageBoxImage.Error
+                //     );
+                //     Environment.Exit(1);
+                // }
             }
 
             Extensions.LoadScripts(
                 AppSettings.DisabledPlugins,
-                CmdLine.SafeStartup,
-                AppSettings.DevelExtenions.Where(a => a.Selected == true).Select(a => a.Item).ToList());
+                false, // 不再使用安全启动模式
+                AppSettings
+                    .DevelExtenions.Where(a => a.Selected == true)
+                    .Select(a => a.Item)
+                    .ToList()
+            );
             OnExtensionsLoaded();
 
             try
@@ -224,46 +278,35 @@ namespace Playnite.DesktopApp
 
         private bool ProcessStartupWizard()
         {
-            // TODO test db path recovery
-            var firstStartup = true;
+            // 始终跳过首次启动检测和窗口，直接设置为非首次启动
+            // 预留参数支持：将来可使用CmdLine属性中的UserDataDir
             var defaultDbDir = GameDatabase.GetDefaultPath(
                 PlayniteSettings.IsPortable,
-                CmdLine.UserDataDir.IsNullOrWhiteSpace() ? null : PlaynitePaths.ConfigRootPath);
+                null // 当前不使用命令行参数中的UserDataDir
+            );
 
-            if (!AppSettings.DatabasePath.IsNullOrEmpty())
-            {
-                AppSettings.FirstTimeWizardComplete = true;
-                firstStartup = false;
-            }
-            else if (AppSettings.DatabasePath.IsNullOrEmpty() && Directory.Exists(GameDatabase.GetFullDbPath(defaultDbDir)))
-            {
-                AppSettings.DatabasePath = defaultDbDir;
-                AppSettings.FirstTimeWizardComplete = true;
-                firstStartup = false;
-            }
-
-            if (firstStartup)
+            // 确保数据库路径已设置
+            if (AppSettings.DatabasePath.IsNullOrEmpty())
             {
                 AppSettings.DatabasePath = defaultDbDir;
                 AppSettings.SaveSettings();
-                Database.SetDatabasePath(AppSettings.DatabasePath);
+            }
+
+            // 设置数据库路径
+            Database.SetDatabasePath(AppSettings.DatabasePath);
+
+            // 确保数据库已打开
+            if (!Database.IsOpen)
+            {
                 Database.OpenDatabase();
+            }
 
-                var wizardWindow = new FirstTimeStartupWindowFactory();
-                var wizardModel = new FirstTimeStartupViewModel(
-                    wizardWindow,
-                    Dialogs,
-                    new ResourceProvider(),
-                    Extensions,
-                    ServicesClient);
-                if (wizardModel.OpenView() == true)
-                {
-                    var settings = wizardModel.Settings;
-                    AppSettings.DisabledPlugins = settings.DisabledPlugins;
-                }
-
+            // 设置首次启动向导完成标志
+            if (!AppSettings.FirstTimeWizardComplete)
+            {
+                AppSettings.FirstTimeWizardComplete = true;
                 AppSettings.AutoBackupEnabled = true;
-                AppSettings.LastAutoBackup = DateTime.Now.AddDays(1); // Postpone first backup to not interrupt initial user experience
+                AppSettings.LastAutoBackup = DateTime.Now.AddDays(1); // 延迟首次备份
                 AppSettings.RotatingBackups = 3;
                 AppSettings.AutoBackupDir = Path.Combine(PlaynitePaths.ConfigRootPath, "Backup");
                 AppSettings.AutoBackupFrequency = AutoBackupFrequency.OnceADay;
@@ -271,16 +314,11 @@ namespace Playnite.DesktopApp
                 AppSettings.AutoBackupIncludeExtensionsData = false;
                 AppSettings.AutoBackupIncludeLibFiles = false;
                 AppSettings.AutoBackupIncludeThemes = false;
-
-                AppSettings.FirstTimeWizardComplete = true;
                 AppSettings.SaveSettings();
             }
-            else
-            {
-                Database.SetDatabasePath(AppSettings.DatabasePath);
-            }
 
-            return firstStartup;
+            // 始终返回false，表示不是首次启动
+            return false;
         }
 
         public override void ShowWindowsNotification(string title, string body, Action action)
@@ -299,8 +337,8 @@ namespace Playnite.DesktopApp
         private Icon GetTrayIcon()
         {
             var trayIconImage =
-                ResourceProvider.GetResource(AppSettings.TrayIcon.GetDescription()) as BitmapImage ??
-                ResourceProvider.GetResource("TrayIcon") as BitmapImage;
+                ResourceProvider.GetResource(AppSettings.TrayIcon.GetDescription()) as BitmapImage
+                ?? ResourceProvider.GetResource("TrayIcon") as BitmapImage;
             return new Icon(trayIconImage.UriSource.LocalPath);
         }
 
@@ -332,7 +370,7 @@ namespace Playnite.DesktopApp
                 Resources = new ResourceProvider(),
                 RootApi = new PlayniteApiRoot(GamesEditor, Extensions, Database),
                 UriHandler = UriHandler,
-                WebViews = new WebViewFactory(AppSettings)
+                WebViews = new WebViewFactory(AppSettings),
             };
         }
 
@@ -352,7 +390,7 @@ namespace Playnite.DesktopApp
                 Resources = new ResourceProvider(),
                 RootApi = new PlayniteApiRoot(GamesEditor, Extensions, Database),
                 UriHandler = UriHandler,
-                WebViews = new WebViewFactory(AppSettings)
+                WebViews = new WebViewFactory(AppSettings),
             };
         }
     }

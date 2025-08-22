@@ -1,0 +1,210 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:TGBox.ViewModels"
+        xmlns:m="using:TGBox.Models"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+        x:Class="TGBox.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        x:Name="MainWindowView"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="太极盒 - TGBox"
+        WindowStartupLocation="CenterScreen"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaTitleBarHeightHint="-1">
+    <Window.Styles>
+        <!-- 主窗口背景 -->
+        <Style Selector="Window">
+            <Setter Property="Background" Value="{DynamicResource WindowBackgourndBrush}" />
+        </Style>
+        
+        <!-- 自定义窗口按钮样式 -->
+        <Style Selector="Button[Name=WindowControlButton]">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+            <Setter Property="Width" Value="45" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="FontSize" Value="16" />
+        </Style>
+        
+        <Style Selector="Button[Name=WindowControlButton]:pointerover">
+            <Setter Property="Background" Value="{DynamicResource HoverColor}" />
+        </Style>
+        
+        <!-- 文本颜色 -->
+        <Style Selector="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+        </Style>
+        
+        <!-- 按钮样式 -->
+        <Style Selector="Button">
+            <Setter Property="Background" Value="{DynamicResource ButtonBackgroundBrush}" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="8 4" />
+            <Setter Property="CornerRadius" Value="3" />
+        </Style>
+        
+        <!-- 边框样式 -->
+        <Style Selector="Border">
+            <Setter Property="BorderBrush" Value="{DynamicResource WindowPanelSeparatorBrush}" />
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        
+        <!-- 主要布局容器 -->
+        <Style Selector="Grid">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        
+        <Style Selector="StackPanel">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        
+
+        
+        <!-- 列表控件 -->
+        <Style Selector="ListBox">
+            <Setter Property="Background" Value="{DynamicResource BackgroundToneColor}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+        </Style>
+        
+        <Style Selector="ListBoxItem">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+        </Style>
+        
+        <!-- 下拉列表 -->
+        <Style Selector="ComboBox">
+            <Setter Property="Background" Value="{DynamicResource ButtonBackgroundBrush}" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+        
+
+    </Window.Styles>
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+    <Grid RowDefinitions="Auto,1*">
+        <!-- 自定义标题栏 -->
+        <Grid x:Name="TitleBar" Background="{DynamicResource MainColorDark}" IsHitTestVisible="True" ColumnDefinitions="Auto,1*,Auto">
+            <!-- 应用标题 -->
+            <TextBlock Grid.Column="0" Text="太极盒 - TGBox" VerticalAlignment="Center" Margin="10" FontSize="14" />
+            
+            <!-- 窗口控制按钮 -->
+            <StackPanel Grid.Column="2" Orientation="Horizontal" IsHitTestVisible="True">
+                <Button Name="MinimizeButton" Content="━" Click="MinimizeClick" />
+                <Button Name="MaximizeButton" Content="□" Click="MaximizeClick" />
+                <Button Name="CloseButton" Content="✕" Click="CloseClick" />
+            </StackPanel>
+        </Grid>
+        
+        <!-- 主内容区域 -->
+        <Grid Grid.Row="1" ColumnDefinitions="2*,3*" RowDefinitions="Auto,1*">
+            <!-- 顶部工具栏 -->
+            <StackPanel Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="5" Spacing="5">
+            <Button Content="添加游戏" Margin="5"/>
+            <Button Content="导入游戏" Margin="5"/>
+            <Button Content="刷新列表" Margin="5"/>
+            <Button Content="游戏统计" Margin="5"/>
+            <TextBlock Text="{Binding Games.Count} 款游戏" Margin="10,5" VerticalAlignment="Center"/>
+            <ComboBox 
+                ItemsSource="{Binding ThemeItems}"
+                SelectedItem="{Binding SelectedThemeItem}"
+                Width="120"
+                Margin="5"
+                HorizontalAlignment="Right"/>
+            <!-- 移除旧的主题切换按钮 -->
+        </StackPanel>
+
+        <!-- 左侧游戏列表 -->
+        <Border Grid.Row="1" Margin="5" BorderThickness="1" BorderBrush="#CCCCCC">
+            <ListBox ItemsSource="{Binding Games}" SelectedItem="{Binding SelectedGame}">
+                <!-- Avalonia ListBox 默认已启用虚拟化，无需额外设置 -->
+                <ListBox.ItemTemplate>
+                    <DataTemplate DataType="m:Game">
+                        <StackPanel Margin="5" Orientation="Horizontal" Spacing="10">
+                            <Image Width="40" Height="40" Stretch="UniformToFill">
+                                <Image.Source>
+                                    <Binding Path="IconPath">
+                                        <Binding.TargetNullValue>
+                                            <Bitmap>avares://TGBox/Assets/avalonia-logo.ico</Bitmap>
+                                        </Binding.TargetNullValue>
+                                    </Binding>
+                                </Image.Source>
+                            </Image>
+                            <StackPanel>
+                                <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
+                                <TextBlock Text="{Binding Genre}" FontSize="12" Opacity="0.7"/>
+                                <TextBlock Text="{Binding ReleaseYear}" FontSize="12" Opacity="0.7"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Border>
+
+        <!-- 右侧游戏详情 -->
+        <Border Grid.Row="1" Grid.Column="1" Margin="5" BorderThickness="1" BorderBrush="#CCCCCC">
+            <StackPanel Margin="10" DataContext="{Binding SelectedGame}">
+                <Grid ColumnDefinitions="Auto,1*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,1*">
+                    <!-- 游戏封面 -->
+                    <Image Grid.Row="0" Grid.Column="0" Width="200" Height="300" Margin="5" Stretch="UniformToFill">
+                        <Image.Source>
+                            <Binding Path="CoverPath">
+                                <Binding.TargetNullValue>
+									<Bitmap>avares://TGBox/Assets/avalonia-logo.ico</Bitmap>
+                                </Binding.TargetNullValue>
+                            </Binding>
+                        </Image.Source>
+                    </Image>
+
+                    <!-- 游戏信息 -->
+                    <StackPanel Grid.Row="0" Grid.Column="1" Margin="10" Spacing="5">
+                        <TextBlock Text="{Binding Name}" FontSize="24" FontWeight="Bold"/>
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <TextBlock Text="{Binding Genre}"/>
+                            <TextBlock Text="|"/>
+                            <TextBlock Text="{Binding ReleaseYear}"/>
+                            <TextBlock Text="|"/>
+                            <TextBlock Text="{Binding Platform}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="游玩时间: "/>
+                            <TextBlock Text="{Binding PlayTime, StringFormat='0 分钟'}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="最后游玩: "/>
+                            <TextBlock Text="{Binding LastPlayed, StringFormat='yyyy-MM-dd HH:mm'}"/>
+                        </StackPanel>
+                        <TextBlock Text="{Binding IsInstalled, StringFormat='状态: 0'}"/>
+                    </StackPanel>
+
+                    <!-- 游戏描述 -->
+                    <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Margin="5" Text="游戏简介" FontWeight="Bold"/>
+                    <TextBlock Grid.Row="2" Grid.ColumnSpan="2" Margin="5" Text="{Binding Description}" TextWrapping="Wrap"/>
+
+                    <!-- 操作按钮 -->
+                    <StackPanel Grid.Row="3" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="5" Spacing="10">
+                        <Button Content="启动游戏" Command="{Binding DataContext.LaunchGameCommand, ElementName=MainWindowView}"
+                                CommandParameter="{Binding}" IsEnabled="{Binding IsInstalled}" Width="100"/>
+                        <Button Content="编辑游戏" Width="100"/>
+                        <Button Content="删除游戏" Width="100"/>
+                        <Button Content="设置封面" Width="100"/>
+                    </StackPanel>
+
+                    <!-- 性能信息 -->
+                    <TextBlock Grid.Row="4" Grid.ColumnSpan="2" Margin="5" Text="性能信息" FontWeight="Bold"/>
+                    <TextBlock Grid.Row="5" Grid.ColumnSpan="2" Margin="5" Text="基于Avalonia框架的高性能虚拟面板 - 支持10000+游戏无卡顿滚动"/>
+                </Grid>
+            </StackPanel>
+        </Border>
+        </Grid>
+    </Grid>
+</Window>
