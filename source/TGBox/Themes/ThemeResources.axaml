@@ -1,0 +1,130 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- 基础资源，所有主题共享 -->
+    <FontFamily x:Key="DefaultFontFamily">Arial, Microsoft YaHei</FontFamily>
+    
+    <!-- 内置主题资源 -->
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+            <!-- 主色调 -->
+            <Color x:Key="MainColor">#1E90FF</Color>
+            <Color x:Key="MainColorDark">#00008B</Color>
+            <Color x:Key="HoverColor">#87CEEB</Color>
+            
+            <!-- 图标颜色 -->
+            <Color x:Key="GlyphColor">#000000</Color>
+            <Color x:Key="HighlightGlyphColor">#FFFFFF</Color>
+            
+            <!-- 弹出层和面板颜色 -->
+            <Color x:Key="PopupBackgroundColor">#FFFFFF</Color>
+            <Color x:Key="PopupBorderColor">#CCCCCC</Color>
+            <Color x:Key="BackgroundToneColor">#F8F9FA</Color>
+            <Color x:Key="GridItemBackgroundColor">#FFFFFF</Color>
+            <Color x:Key="WindowPanelSeparatorColor">#CCCCCC</Color>
+            
+            <!-- 文本颜色 -->
+            <SolidColorBrush x:Key="TextBrush" Color="#000000"/>
+            
+            <!-- 窗口背景 -->
+            <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#FFFFFF"/>
+            
+            <!-- 按钮背景色 -->
+            <SolidColorBrush x:Key="ButtonBackgroundBrush" Color="#1E90FF"/>
+        </ResourceDictionary>
+        
+        <!-- 深色主题资源 -->
+        <ResourceDictionary x:Key="Dark">
+            <!-- 主色调 -->
+            <Color x:Key="MainColor">#333333</Color>
+            <Color x:Key="MainColorDark">#1A1A1A</Color>
+            <Color x:Key="HoverColor">#444444</Color>
+            
+            <!-- 图标颜色 -->
+            <Color x:Key="GlyphColor">#CCCCCC</Color>
+            <Color x:Key="HighlightGlyphColor">#FFFFFF</Color>
+            
+            <!-- 弹出层和面板颜色 -->
+            <Color x:Key="PopupBackgroundColor">#2A2A2A</Color>
+            <Color x:Key="PopupBorderColor">#444444</Color>
+            <Color x:Key="BackgroundToneColor">#222222</Color>
+            <Color x:Key="GridItemBackgroundColor">#60444444</Color>
+            <Color x:Key="WindowPanelSeparatorColor">#444444</Color>
+            
+            <!-- 文本颜色 -->
+            <SolidColorBrush x:Key="TextBrush" Color="#CCCCCC"/>
+            
+            <!-- 窗口背景 -->
+            <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#1A1A1A"/>
+            
+            <!-- 按钮背景色 -->
+            <SolidColorBrush x:Key="ButtonBackgroundBrush" Color="#333333"/>
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+    
+    <!-- 自定义主题资源 - 单独定义，不放在ThemeDictionaries中 -->
+    <!-- 红色主题资源 -->
+    <ResourceDictionary x:Key="RedTheme">
+        <!-- 主色调 -->
+        <Color x:Key="MainColor">#800000</Color>
+        <Color x:Key="MainColorDark">#600000</Color>
+        <Color x:Key="HoverColor">#A00000</Color>
+        
+        <!-- 图标颜色 -->
+        <Color x:Key="GlyphColor">#FFFFFF</Color>
+        <Color x:Key="HighlightGlyphColor">#FFFF00</Color>
+        
+        <!-- 弹出层和面板颜色 -->
+        <Color x:Key="PopupBackgroundColor">#400000</Color>
+        <Color x:Key="PopupBorderColor">#FF0000</Color>
+        <Color x:Key="BackgroundToneColor">#2A0000</Color>
+        <Color x:Key="GridItemBackgroundColor">#60800000</Color>
+        <Color x:Key="WindowPanelSeparatorColor">#FF6666</Color>
+        
+        <!-- 文本颜色 -->
+        <SolidColorBrush x:Key="TextBrush" Color="#FFFFFF"/>
+        
+        <!-- 窗口背景 - 渐变 -->
+        <LinearGradientBrush x:Key="WindowBackgroundBrush"
+                            StartPoint="0.6,0.8"
+                            EndPoint="1,1">
+            <GradientStop Offset="0" Color="#400000"/>
+            <GradientStop Offset="1.5" Color="#800000"/>
+        </LinearGradientBrush>
+        
+        <!-- 按钮背景色 -->
+        <SolidColorBrush x:Key="ButtonBackgroundBrush" Color="#9a4545"/>
+    </ResourceDictionary>
+    
+    <!-- 蓝色主题资源 -->
+    <ResourceDictionary x:Key="BlueTheme">
+        <!-- 主色调 -->
+        <Color x:Key="MainColor">#2C3E50</Color>
+        <Color x:Key="MainColorDark">#1A2530</Color>
+        <Color x:Key="HoverColor">#3498DB</Color>
+        
+        <!-- 图标颜色 -->
+        <Color x:Key="GlyphColor">#B3D0FF</Color>
+        <Color x:Key="HighlightGlyphColor">#FFFFFF</Color>
+        
+        <!-- 弹出层和面板颜色 -->
+        <Color x:Key="PopupBackgroundColor">#1E2A38</Color>
+        <Color x:Key="PopupBorderColor">#3498DB</Color>
+        <Color x:Key="BackgroundToneColor">#1A2530</Color>
+        <Color x:Key="GridItemBackgroundColor">#603498DB</Color>
+        <Color x:Key="WindowPanelSeparatorColor">#2980B9</Color>
+        
+        <!-- 文本颜色 -->
+        <SolidColorBrush x:Key="TextBrush" Color="#FFFFFF"/>
+        
+        <!-- 窗口背景 - 渐变 -->
+        <LinearGradientBrush x:Key="WindowBackgroundBrush"
+                            StartPoint="0.6,0.8"
+                            EndPoint="1,1">
+            <GradientStop Offset="0" Color="#1E2A38"/>
+            <GradientStop Offset="1.5" Color="#0F1820"/>
+        </LinearGradientBrush>
+        
+        <!-- 按钮背景色 -->
+        <SolidColorBrush x:Key="ButtonBackgroundBrush" Color="#3498DB"/>
+    </ResourceDictionary>
+</ResourceDictionary>

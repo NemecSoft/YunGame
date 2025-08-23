@@ -1,0 +1,46 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:TGBox.ViewModels"
+             xmlns:m="clr-namespace:TGBox.Models"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:converters="using:TGBox.Converters"
+             mc:Ignorable="d"
+             x:Class="TGBox.Views.GameViews.CardListView"
+             x:DataType="vm:MainWindowViewModel"
+             x:Name="CardListControl">
+    <UserControl.Resources>
+        <!-- 测试注释 - 用于定位AXN0002错误 -->
+        
+        <!-- 卡片列表模式模板 - 直接定义单个游戏项的显示方式 -->
+        <DataTemplate x:Key="CardListTemplate" DataType="m:Game">
+            <Border Margin="5" BorderThickness="1" BorderBrush="{DynamicResource MainColor}" CornerRadius="8" Padding="15" Background="{DynamicResource GridItemBackgroundColor}">
+                <Grid ColumnDefinitions="Auto,1*,Auto" RowDefinitions="Auto,Auto,Auto">
+                    <!-- 游戏图标 -->
+                    <Image Grid.Row="0" Grid.Column="0" Grid.RowSpan="3" Width="60" Height="60" Margin="0,0,15,0" Stretch="UniformToFill">
+                        <Image.Source>
+                            <Binding Path="IconPath">
+                                <Binding.TargetNullValue>
+                                    <Bitmap>avares://TGBox/Assets/avalonia-logo.ico</Bitmap>
+                                </Binding.TargetNullValue>
+                            </Binding>
+                        </Image.Source>
+                    </Image>
+                </Grid>
+            </Border>
+        </DataTemplate>
+        
+        <!-- ... existing code ... -->
+    </UserControl.Resources>
+    
+    <Grid>
+        <!-- 卡片列表视图 -->
+        <ListBox ItemsSource="{Binding Games}" SelectedItem="{Binding SelectedGame}"
+                 Margin="0" Background="{DynamicResource ElementBackgroundColor}" BorderThickness="0"
+                 MinHeight="100">
+            <ListBox.ItemTemplate>
+                <StaticResource ResourceKey="CardListTemplate"/>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</UserControl>

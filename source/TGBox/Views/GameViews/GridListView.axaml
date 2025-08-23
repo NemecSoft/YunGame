@@ -1,0 +1,49 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:TGBox.ViewModels"
+             xmlns:m="clr-namespace:TGBox.Models"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:converters="using:TGBox.Converters"
+             mc:Ignorable="d"
+             x:Class="TGBox.Views.GameViews.GridListView"
+             x:DataType="vm:MainWindowViewModel"
+             x:Name="GridViewControl">
+    <UserControl.Resources>
+        <!-- 测试注释 - 用于定位AXN0002错误 -->
+        
+        <!-- 网格模式模板 - 直接定义单个游戏项的显示方式 -->
+        <DataTemplate x:Key="GridTemplate" DataType="m:Game">
+            <Border Margin="5" Background="{DynamicResource GridItemBackgroundColor}" Padding="8" CornerRadius="8" BorderThickness="1" BorderBrush="#CCCCCC">
+                <StackPanel Spacing="5">
+                    <!-- 游戏封面 -->
+                    <Image Width="160" Height="120" Stretch="UniformToFill">
+                        <Image.Source>
+                            <Binding Path="CoverPath">
+                                <Binding.TargetNullValue>
+                                    <Bitmap>avares://TGBox/Assets/avalonia-logo.ico</Bitmap>
+                                </Binding.TargetNullValue>
+                            </Binding>
+                        </Image.Source>
+                    </Image>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid>
+        <!-- 网格视图 -->
+        <ListBox ItemsSource="{Binding Games}" SelectedItem="{Binding SelectedGame}"
+                 Margin="0" Background="{DynamicResource ElementBackgroundColor}" BorderThickness="0"
+                 MinHeight="100">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel Orientation="Horizontal" ItemWidth="250" ItemHeight="180"/>
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+                <StaticResource ResourceKey="GridTemplate"/>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</UserControl>

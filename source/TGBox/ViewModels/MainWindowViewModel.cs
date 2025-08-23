@@ -44,7 +44,8 @@ public enum ThemeType
 {
     Light,
     Dark,
-    Red
+    Red,
+    Blue
 }
 
 /// <summary>
@@ -83,7 +84,7 @@ public class MainWindowViewModel : ViewModelBase
     /// <summary>
     /// 当前选中的游戏
     /// </summary>
-    [Reactive] public Game SelectedGame { get; set; }
+    [Reactive] public Game? SelectedGame { get; set; }
     
     /// <summary>
     /// 启动游戏命令
@@ -95,11 +96,7 @@ public class MainWindowViewModel : ViewModelBase
     /// </summary>
     [Reactive] public ThemeType CurrentTheme { get; set; } = ThemeType.Light;
     
-    /// <summary>
-    /// 主题资源字典
-    /// </summary>
-    private ResourceDictionary _redThemeResources;
-    private ResourceDictionary _darkThemeResources;
+
     
     /// <summary>
     /// 切换主题命令
@@ -114,7 +111,7 @@ public class MainWindowViewModel : ViewModelBase
     /// <summary>
     /// 当前选中的主题项
     /// </summary>
-    [Reactive] public ThemeItem SelectedThemeItem { get; set; }
+    [Reactive] public ThemeItem? SelectedThemeItem { get; set; }
     
     /// <summary>
     /// 当前游戏显示模式
@@ -164,7 +161,7 @@ public class MainWindowViewModel : ViewModelBase
     /// <summary>
     /// 调试视图模型，用于显示调试信息
     /// </summary>
-    public Views.DebugViewModel? DebugViewModel { get; set; }
+    //public Views.DebugViewModel? DebugViewModel { get; set; }
     
     /// <summary>
     /// 编辑游戏命令
@@ -217,7 +214,7 @@ public class MainWindowViewModel : ViewModelBase
             AddGameCommand = ReactiveCommand.Create(AddGame);
             ImportGamesCommand = ReactiveCommand.Create(ImportGames);
             LoadGamesCommand = ReactiveCommand.Create(LoadGames);
-            ShowDebugWindowCommand = ReactiveCommand.Create(ShowDebugWindow);
+         //   ShowDebugWindowCommand = ReactiveCommand.Create(ShowDebugWindow);
             EditGameCommand = ReactiveCommand.Create<Game>(EditGame);
             DeleteGameCommand = ReactiveCommand.Create<Game>(DeleteGame);
             ToggleAdVisibilityCommand = ReactiveCommand.Create(ToggleAdVisibility);
@@ -228,28 +225,38 @@ public class MainWindowViewModel : ViewModelBase
             ThemeItems.Add(new ThemeItem { DisplayName = "浅色主题", ThemeType = ThemeType.Light });
             ThemeItems.Add(new ThemeItem { DisplayName = "深色主题", ThemeType = ThemeType.Dark });
             ThemeItems.Add(new ThemeItem { DisplayName = "红色主题", ThemeType = ThemeType.Red });
+            ThemeItems.Add(new ThemeItem { DisplayName = "蓝色主题", ThemeType = ThemeType.Blue });
             
-            // 初始化为Light主题
-            CurrentTheme = ThemeType.Light;
+            // 设置初始主题为深色
+            CurrentTheme = ThemeType.Red;
             SelectedThemeItem = ThemeItems.FirstOrDefault(item => item.ThemeType == CurrentTheme);
             
-            // 订阅SelectedThemeItem变化事件
-            this.WhenAnyValue(x => x.SelectedThemeItem)
-                .Where(item => item != null)
-                .Subscribe(item => SetTheme(item.ThemeType));
-            
-            // 在UI线程上初始化主题
+            // 在UI线程上初始化主题资源
             Dispatcher.UIThread.Post(() =>
             {
                 if (Application.Current != null)
                 {
-                    // 初始化红色主题资源
-                    InitializeRedTheme();
-                    // 初始化深色主题资源
-                    InitializeDarkTheme();
-                    
+                    Console.WriteLine("开始初始化主题资源...");
+                    // 不再需要单独初始化主题资源，ThemeVariant系统会自动处理
+                    Console.WriteLine($"准备应用初始主题: {CurrentTheme}");
                     // 设置初始主题
-                    ApplyTheme(ThemeType.Light);
+                    ApplyTheme(CurrentTheme);
+                    Console.WriteLine($"主题应用完成，当前主题: {CurrentTheme}");
+                     
+                    // 主题资源初始化完成后，再设置主题变化订阅，避免多次触发
+                    this.WhenAnyValue(x => x.SelectedThemeItem)
+                        .Where(item => item != null)
+                        .Subscribe(item =>
+                        {
+                            if (item != null) // 额外的null检查，确保安全访问
+                            {
+                                SetTheme(item.ThemeType);
+                            }
+                        });
+                }
+                else
+                {
+                    Console.WriteLine("警告: Application.Current为空，无法初始化主题");
                 }
             });
         
@@ -265,20 +272,14 @@ public class MainWindowViewModel : ViewModelBase
     {
         try
         {
-            if (CurrentTheme != themeType)
+            if (CurrentTheme != themeType && Application.Current != null)
             {
+                Console.WriteLine($"开始切换主题: {CurrentTheme} -> {themeType}");
                 // 确保在UI线程上执行主题切换操作
                 if (Dispatcher.UIThread.CheckAccess())
                 {
-                    // 先移除所有自定义主题资源，防止资源冲突
-                    if (_redThemeResources != null && Application.Current != null)
-                    {
-                        Application.Current.Resources.MergedDictionaries.Remove(_redThemeResources);
-                    }
-                    if (_darkThemeResources != null && Application.Current != null)
-                    {
-                        Application.Current.Resources.MergedDictionaries.Remove(_darkThemeResources);
-                    }
+                    // 使用ThemeVariant系统，不再需要手动移除资源字典
+                    Console.WriteLine("准备应用新主题");
                     
                     ApplyTheme(themeType);
                 }
@@ -287,14 +288,8 @@ public class MainWindowViewModel : ViewModelBase
                     Dispatcher.UIThread.Post(() =>
                     {
                         // 先移除所有自定义主题资源，防止资源冲突
-                        if (_redThemeResources != null && Application.Current != null)
-                        {
-                            Application.Current.Resources.MergedDictionaries.Remove(_redThemeResources);
-                        }
-                        if (_darkThemeResources != null && Application.Current != null)
-                        {
-                            Application.Current.Resources.MergedDictionaries.Remove(_darkThemeResources);
-                        }
+                        // 使用ThemeVariant系统，不再需要手动移除资源字典
+                        Console.WriteLine("准备应用新主题");
                         
                         ApplyTheme(themeType);
                     });
@@ -307,150 +302,57 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
     
-    /// <summary>
-    /// 初始化红色主题资源，参考 Constants.xaml 中的红色主题配色
-    /// </summary>
-        private void InitializeRedTheme()
-        {
-            if (Application.Current == null)
-                return;
-
-            // 如果已经存在资源字典，则先清理
-            if (_redThemeResources != null)
-            {
-                Application.Current.Resources.MergedDictionaries.Remove(_redThemeResources);
-            }
-            
-            _redThemeResources = new ResourceDictionary();
-        
-        try
-        {
-            // 创建红色主题资源字典
-            _redThemeResources = new ResourceDictionary();
-            
-            // 参考 Constants.xaml 中的红色主题配色
-            _redThemeResources.Add("MainColor", Color.Parse("#545B67"));
-            _redThemeResources.Add("MainColorDark", Color.Parse("#700010"));
-            _redThemeResources.Add("HoverColor", Color.Parse("#9a4545"));
-            _redThemeResources.Add("GlyphColor", Color.Parse("#F4A460"));
-            _redThemeResources.Add("HighlightGlyphColor", Color.Parse("#c08080"));
-            _redThemeResources.Add("PopupBackgroundColor", Color.Parse("#171e26"));
-            _redThemeResources.Add("PopupBorderColor", Color.Parse("#FFAF612E"));
-            _redThemeResources.Add("BackgroundToneColor", Color.Parse("#2C3A67"));
-            _redThemeResources.Add("GridItemBackgroundColor", Color.Parse("#609a4545"));
-            _redThemeResources.Add("WindowPanelSeparatorColor", Color.Parse("#900030"));
-            
-            // 添加文本颜色资源
-            _redThemeResources.Add("TextBrush", new SolidColorBrush(Color.Parse("#FFFFFF")));
-            
-            // 定义线性渐变刷
-            var windowBackgroundBrush = new LinearGradientBrush
-            {
-                StartPoint = new RelativePoint(0.6, 0.8, RelativeUnit.Relative),
-                EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative),
-                GradientStops = {
-                    new GradientStop(Color.Parse("#303030"), 0),
-                    new GradientStop(Color.Parse("#800000"), 1.5)
-                }
-            };
-            
-            _redThemeResources.Add("WindowBackgourndBrush", windowBackgroundBrush);
-            
-            // 按钮背景色
-            _redThemeResources.Add("ButtonBackgroundBrush", new SolidColorBrush(Color.Parse("#9a4545")));
-            
-            Console.WriteLine("红色主题资源初始化完成");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"红色主题资源初始化失败: {ex.Message}");
-        }
-    }
-        
-        /// <summary>
-        /// 初始化深色主题资源
-        /// </summary>
-        private void InitializeDarkTheme()
-        {
-            if (Application.Current == null)
-                return;
-
-            // 如果已经存在资源字典，则先清理
-            if (_darkThemeResources != null)
-            {
-                Application.Current.Resources.MergedDictionaries.Remove(_darkThemeResources);
-            }
-            
-            _darkThemeResources = new ResourceDictionary();
-            
-            // 定义深色主题配色
-            _darkThemeResources.Add("MainColor", Color.Parse("#333333"));
-            _darkThemeResources.Add("MainColorDark", Color.Parse("#1A1A1A"));
-            _darkThemeResources.Add("HoverColor", Color.Parse("#444444"));
-            _darkThemeResources.Add("GlyphColor", Color.Parse("#CCCCCC"));
-            _darkThemeResources.Add("HighlightGlyphColor", Color.Parse("#FFFFFF"));
-            _darkThemeResources.Add("PopupBackgroundColor", Color.Parse("#2A2A2A"));
-            _darkThemeResources.Add("PopupBorderColor", Color.Parse("#444444"));
-            _darkThemeResources.Add("BackgroundToneColor", Color.Parse("#222222"));
-            _darkThemeResources.Add("GridItemBackgroundColor", Color.Parse("#60444444"));
-            _darkThemeResources.Add("WindowPanelSeparatorColor", Color.Parse("#444444"));
-            
-            // 添加文本颜色资源
-            _darkThemeResources.Add("TextBrush", new SolidColorBrush(Color.Parse("#CCCCCC")));
-            
-            // 定义纯色背景刷（黑色）
-            var windowBackgroundBrush = new SolidColorBrush(Color.Parse("#1A1A1A"));
-            _darkThemeResources.Add("WindowBackgroundBrush", windowBackgroundBrush);
-        }
+        // 主题初始化方法已被删除，现在通过Avalonia的ThemeVariant系统统一管理主题资源
+        // 主题资源定义位于/Themes/ThemeResources.axaml文件中
         
         /// <summary>
         /// 应用指定的主题
-    /// </summary>
-    /// <param name="theme">要应用的主题类型</param>
-    private void ApplyTheme(ThemeType theme)
-    {
-        if (Application.Current == null)
-            return;
-        
-        try
+        /// </summary>
+        /// <param name="theme">要应用的主题类型</param>
+        private void ApplyTheme(ThemeType theme)
         {
-            // 移除之前添加的红色主题资源（如果存在）
-            if (_redThemeResources != null && Application.Current.Resources.MergedDictionaries.Contains(_redThemeResources))
-            {
-                Application.Current.Resources.MergedDictionaries.Remove(_redThemeResources);
-            }
+            if (Application.Current == null)
+                return;
             
-            switch (theme)
+            try
             {
-                case ThemeType.Light:
-                    Application.Current.RequestedThemeVariant = ThemeVariant.Light;
-                    break;
-                case ThemeType.Dark:
-                    Application.Current.RequestedThemeVariant = ThemeVariant.Light; // 使用Light作为基础，然后覆盖自定义深色资源
-                    // 添加深色主题资源
-                    if (_darkThemeResources != null)
-                    {
-                        Application.Current.Resources.MergedDictionaries.Add(_darkThemeResources);
-                    }
-                    break;
-                case ThemeType.Red:
-                    Application.Current.RequestedThemeVariant = ThemeVariant.Light;
-                    // 添加红色主题资源
-                    if (_redThemeResources != null)
-                    {
-                        Application.Current.Resources.MergedDictionaries.Add(_redThemeResources);
-                    }
-                    break;
+                // 获取调用堆栈信息，以追踪谁调用了ApplyTheme
+                var stackTrace = new System.Diagnostics.StackTrace();
+                string callerMethod = stackTrace.FrameCount > 1 ? stackTrace.GetFrame(1).GetMethod().Name : "Unknown";
+                
+                Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] 进入ApplyTheme方法，调用者: {callerMethod}，请求应用主题: {theme}");
+                
+                // 统一使用Avalonia的ThemeVariant机制
+                switch (theme)
+                {
+                    case ThemeType.Light:
+                        Console.WriteLine("应用浅色主题");
+                        Application.Current.RequestedThemeVariant = ThemeVariant.Light;
+                        break;
+                    case ThemeType.Dark:
+                        Console.WriteLine("应用深色主题");
+                        Application.Current.RequestedThemeVariant = ThemeVariant.Dark;
+                        break;
+                    case ThemeType.Red:
+                        Console.WriteLine("应用红色主题");
+                        Application.Current.RequestedThemeVariant = new ThemeVariant("Red", null);
+                        break;
+                    case ThemeType.Blue:
+                        Console.WriteLine("应用蓝色主题");
+                        Application.Current.RequestedThemeVariant = new ThemeVariant("Blue", null);
+                        break;
+                }
+                
+                Console.WriteLine($"主题应用成功: {theme}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"应用主题时发生错误: {ex.Message}");
             }
             
             CurrentTheme = theme;
-            Console.WriteLine($"主题已应用: {theme}");
+            Console.WriteLine($"主题已应用: {theme}，当前Application主题: {Application.Current.RequestedThemeVariant}");
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"应用主题失败: {ex.Message}");
-        }
-    }
     
 
     
@@ -583,28 +485,28 @@ public class MainWindowViewModel : ViewModelBase
     /// <summary>
     /// 显示调试窗口
     /// </summary>
-    private void ShowDebugWindow()
-    {
-        try
-        {
-            if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-            {
-                // 确保DebugViewModel已初始化
-                if (DebugViewModel == null)
-                {
-                    DebugViewModel = new Views.DebugViewModel();
-                }
+    //private void ShowDebugWindow()
+    //{
+    //    try
+    //    {
+    //        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+    //        {
+    //            // 确保DebugViewModel已初始化
+    //            if (DebugViewModel == null)
+    //            {
+    //                DebugViewModel = new Views.DebugViewModel();
+    //            }
                 
-                // 使用带参数的构造函数创建DebugWindow
-                var debugWindow = new Views.DebugWindow(DebugViewModel);
-                debugWindow.Show();
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"显示调试窗口失败: {ex.Message}");
-        }
-    }
+    //            // 使用带参数的构造函数创建DebugWindow
+    //            var debugWindow = new Views.DebugWindow(DebugViewModel);
+    //            debugWindow.Show();
+    //        }
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        Console.WriteLine($"显示调试窗口失败: {ex.Message}");
+    //    }
+    //}
     
     /// <summary>
     /// 编辑游戏
@@ -685,7 +587,7 @@ public class MainWindowViewModel : ViewModelBase
         {
             if (Application.Current != null)
             {
-                // 循环切换主题：Light -> Dark -> Red -> Light
+                // 循环切换主题：Light -> Dark -> Red -> Blue -> Light
                 ThemeType nextTheme;
                 switch (CurrentTheme)
                 {
@@ -694,6 +596,9 @@ public class MainWindowViewModel : ViewModelBase
                         break;
                     case ThemeType.Dark:
                         nextTheme = ThemeType.Red;
+                        break;
+                    case ThemeType.Red:
+                        nextTheme = ThemeType.Blue;
                         break;
                     default:
                         nextTheme = ThemeType.Light;
@@ -767,7 +672,7 @@ public class MainWindowViewModel : ViewModelBase
                 var appDataRoot = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
                 string logMessage = $"[视频攻略] APPDATA路径: {appDataRoot}";
                 Debug.WriteLine(logMessage);
-                DebugViewModel?.AddDebugLog(logMessage);
+                //DebugViewModel?.AddDebugLog(logMessage);
                 
                 var pathsToCheck = new List<string>{
                     // 用户直接放在TGBox下的路径
@@ -784,27 +689,27 @@ public class MainWindowViewModel : ViewModelBase
                 {
                     string pathCheckMessage = $"[视频攻略] 检查路径: {path}";
                     Debug.WriteLine(pathCheckMessage);
-                    DebugViewModel?.AddDebugLog(pathCheckMessage);
+                    //DebugViewModel?.AddDebugLog(pathCheckMessage);
                     if (System.IO.Directory.Exists(path))
                     {
                         string pathExistsMessage = $"[视频攻略] 路径存在: {path}";
                         Debug.WriteLine(pathExistsMessage);
-                        DebugViewModel?.AddDebugLog(pathExistsMessage);
+                       // DebugViewModel?.AddDebugLog(pathExistsMessage);
                         var videoFiles = System.IO.Directory.GetFiles(path)
                             .Where(file => videoExtensions.Contains(System.IO.Path.GetExtension(file).ToLower()))
                             .ToList();
                         
                         string filesFoundMessage = $"[视频攻略] 在 {path} 中找到 {videoFiles.Count} 个视频文件";                        
                         Debug.WriteLine(filesFoundMessage);
-                        DebugViewModel?.AddDebugLog(filesFoundMessage);
+                        //DebugViewModel?.AddDebugLog(filesFoundMessage);
                         
                         // 显示找到的每个视频文件的名称
                         if (videoFiles.Count > 0)
                         {
-                            DebugViewModel?.AddDebugLog("[视频攻略] 找到的文件列表:");
+                            //DebugViewModel?.AddDebugLog("[视频攻略] 找到的文件列表:");
                             foreach (var file in videoFiles)
                             {
-                                DebugViewModel?.AddDebugLog($"  - {System.IO.Path.GetFileName(file)}");
+                             //   DebugViewModel?.AddDebugLog($"  - {System.IO.Path.GetFileName(file)}");
                             }
                         }
                         allVideoFiles.AddRange(videoFiles);
@@ -813,7 +718,7 @@ public class MainWindowViewModel : ViewModelBase
                     {
                         string pathNotExistsMessage = $"[视频攻略] 路径不存在: {path}";
                         Debug.WriteLine(pathNotExistsMessage);
-                        DebugViewModel?.AddDebugLog(pathNotExistsMessage);
+                        //DebugViewModel?.AddDebugLog(pathNotExistsMessage);
                     }
                 }
                 
@@ -822,11 +727,11 @@ public class MainWindowViewModel : ViewModelBase
                 {
                     string totalFilesMessage = $"[视频攻略] 总共找到 {allVideoFiles.Count} 个视频文件，打开视频窗口";                    
                     Debug.WriteLine(totalFilesMessage);
-                    DebugViewModel?.AddDebugLog(totalFilesMessage);
+                    //DebugViewModel?.AddDebugLog(totalFilesMessage);
                     // 打开视频攻略窗口显示本地视频
                     var videoGuideWindow = new VideoGuideWindow();
                     videoGuideWindow.GameName = game.Name;
-                    DebugViewModel?.AddDebugLog("[视频攻略] 打开视频攻略窗口");
+                    //DebugViewModel?.AddDebugLog("[视频攻略] 打开视频攻略窗口");
                     videoGuideWindow.Show();
                     return;
                 }
@@ -834,7 +739,7 @@ public class MainWindowViewModel : ViewModelBase
                 {
                     string noFilesMessage = "[视频攻略] 未找到任何视频文件，导航到B站搜索";
                     Debug.WriteLine(noFilesMessage);
-                    DebugViewModel?.AddDebugLog(noFilesMessage);
+                    //DebugViewModel?.AddDebugLog(noFilesMessage);
                 }
                 
                 // 如果本地没有视频文件，则导航到bilibili进行搜索
@@ -844,7 +749,7 @@ public class MainWindowViewModel : ViewModelBase
             {
                 string errorMessage = "显示视频攻略失败: " + ex.Message;
                     Debug.WriteLine(errorMessage);
-                    DebugViewModel?.AddDebugLog(errorMessage);
+                    //DebugViewModel?.AddDebugLog(errorMessage);
                 // 如果出错，也导航到bilibili
                 NavigateToBilibiliSearch(game.Name);
             }

@@ -2,16 +2,17 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:models="clr-namespace:TGBox.Models"
-        xmlns:views="clr-namespace:TGBox.Views"
+        xmlns:models="using:TGBox.Models"
+        xmlns:views="using:TGBox.Views"
         xmlns:libvlc="clr-namespace:LibVLCSharp.Avalonia;assembly=LibVLCSharp.Avalonia"
         mc:Ignorable="d"
         x:Class="TGBox.Views.VideoGuideWindow"
-        x:DataType="views:VideoGuideWindow"
+        x:Name="ThisWindow"
         Title="视频攻略"
         Width="1000"
         Height="700"
-        WindowStartupLocation="CenterOwner">
+        WindowStartupLocation="CenterOwner"
+        x:DataType="views:VideoGuideWindow">
     <Grid RowDefinitions="Auto,2*,1*,Auto">
         <!-- 标题栏 -->
         <Border Grid.Row="0" Background="#2196F3" Padding="10">
@@ -27,10 +28,10 @@
             <Grid VerticalAlignment="Bottom" Background="#99000000">
                 <Grid.Margin>10</Grid.Margin>
                 <StackPanel Orientation="Horizontal" Spacing="10">
-                    <Button x:Name="PlayPauseButton" Content="播放" Command="{Binding PlayPauseCommand}" Width="80" Height="30" Background="#4CAF50" Foreground="White"/>
+                    <Button x:Name="PlayPauseButton" Content="播放" Command="{Binding #ThisWindow.PlayPauseCommand}" Width="80" Height="30" Background="#4CAF50" Foreground="White"/>
                     <Slider x:Name="PositionSlider" Width="300" Height="20" IsSnapToTickEnabled="False"/>
                     <TextBlock x:Name="TimeDisplay" FontSize="12" Foreground="White" VerticalAlignment="Center" Width="80" Text="00:00 / 00:00"/>
-                    <Button Content="静音" Command="{Binding ToggleMuteCommand}" Width="60" Height="30" Background="#2196F3" Foreground="White"/>
+                    <Button Content="静音" Command="{Binding #ThisWindow.ToggleMuteCommand}" Width="60" Height="30" Background="#2196F3" Foreground="White"/>
                     <Slider x:Name="VolumeSlider" Width="100" Height="20" IsSnapToTickEnabled="False" Maximum="100" Value="50"/>
                 </StackPanel>
             </Grid>
@@ -40,7 +41,7 @@
         <ScrollViewer Grid.Row="2" Padding="10">
             <ItemsControl ItemsSource="{Binding Videos}">
                 <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="models:VideoFile">
+                    <DataTemplate DataType="models:VideoFile">
                         <Border Margin="0,5" BorderThickness="1" BorderBrush="#CCCCCC" CornerRadius="8" Padding="10">
                             <Grid ColumnDefinitions="200,1*,Auto">
                                 <!-- 视频缩略图 -->
@@ -63,14 +64,14 @@
                 <!-- 操作按钮 -->
                 <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="5">
                     <Button Content="播放" 
-                                    Command="{Binding $parent[ItemsControl].DataContext.PlayCommand}" 
+                                    Command="{Binding #ThisWindow.PlayCommand}" 
                                     CommandParameter="{Binding}"
                                     Width="80" 
                                     Height="30" 
                                     Background="#4CAF50" 
                                     Foreground="White"/>
                     <Button Content="打开文件夹" 
-                            Command="{Binding $parent[ItemsControl].DataContext.OpenFolderCommand}" 
+                            Command="{Binding #ThisWindow.OpenFolderCommand}" 
                             CommandParameter="{Binding}"
                             Width="80" 
                             Height="30" 
@@ -85,13 +86,13 @@
         </ScrollViewer>
         
         <!-- 底部状态栏 -->
-        <Border Grid.Row="2" Background="#F5F5F5" Padding="10" BorderThickness="1,1,0,0" BorderBrush="#CCCCCC">
+        <Border Grid.Row="3" Background="#F5F5F5" Padding="10" BorderThickness="1,1,0,0" BorderBrush="#CCCCCC">
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="共找到 " FontSize="12"/>
                 <TextBlock Text="{Binding Videos.Count}" FontSize="12" FontWeight="Bold"/>
                 <TextBlock Text=" 个视频文件" FontSize="12"/>
                 <Button Content="刷新" 
-                        Command="{Binding RefreshCommand}" 
+                        Command="{Binding #ThisWindow.RefreshCommand}" 
                         Margin="20,0,0,0" 
                         Width="60" 
                         Height="25"/>

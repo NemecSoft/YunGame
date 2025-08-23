@@ -5,15 +5,14 @@
              xmlns:converters="using:TGBox.Converters"
              RequestedThemeVariant="Default">
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
-
     <Application.DataTemplates>
         <local:ViewLocator/>
     </Application.DataTemplates>
-
+    
     <Application.Resources>
         <converters:AppModeColorConverter x:Key="ModeColorConverter"/>
     </Application.Resources>
-  
+    
     <Application.Styles>
         <FluentTheme/>
     </Application.Styles>
