@@ -1,0 +1,85 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:models="clr-namespace:TGBox.Models"
+        xmlns:views="clr-namespace:TGBox.Views"
+        mc:Ignorable="d"
+        x:Class="TGBox.Views.VideoGuideWindow"
+        x:DataType="views:VideoGuideWindow"
+        Title="视频攻略"
+        Width="800"
+        Height="600"
+        WindowStartupLocation="CenterOwner">
+    <Grid RowDefinitions="Auto,1*,Auto">
+        <!-- 标题栏 -->
+        <Border Grid.Row="0" Background="#2196F3" Padding="10">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="视频攻略 - " FontSize="16" FontWeight="Bold" Foreground="White"/>
+                <TextBlock Text="{Binding GameName}" FontSize="16" FontWeight="Bold" Foreground="White"/>
+            </StackPanel>
+        </Border>
+        
+        <!-- 视频列表 -->
+        <ScrollViewer Grid.Row="1" Padding="10">
+            <ItemsControl ItemsSource="{Binding Videos}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="models:VideoFile">
+                        <Border Margin="0,5" BorderThickness="1" BorderBrush="#CCCCCC" CornerRadius="8" Padding="10">
+                            <Grid ColumnDefinitions="200,1*,Auto">
+                                <!-- 视频缩略图 -->
+                <Border Grid.Column="0" Width="180" Height="100" Background="#F0F0F0" CornerRadius="4">
+                    <Image Source="{Binding ThumbnailPath}" Stretch="UniformToFill"/>
+                </Border>
+                
+                <!-- 视频信息 -->
+                <StackPanel Grid.Column="1" Margin="10,0">
+                    <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="Bold" Margin="0,0,0,5"/>
+                    <TextBlock Text="{Binding Description}" FontSize="12" TextWrapping="Wrap" MaxHeight="40"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                        <TextBlock Text="时长: " FontSize="11" Foreground="Gray"/>
+                        <TextBlock Text="{Binding Duration}" FontSize="11" Foreground="Gray"/>
+                        <TextBlock Text=" | 大小: " FontSize="11" Foreground="Gray" Margin="10,0,0,0"/>
+                        <TextBlock Text="{Binding FileSize}" FontSize="11" Foreground="Gray"/>
+                    </StackPanel>
+                </StackPanel>
+                
+                <!-- 操作按钮 -->
+                <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="5">
+                    <Button Content="播放" 
+                                    Command="{Binding $parent[ItemsControl].DataContext.PlayCommand}" 
+                                    CommandParameter="{Binding}"
+                                    Width="80" 
+                                    Height="30" 
+                                    Background="#4CAF50" 
+                                    Foreground="White"/>
+                    <Button Content="打开文件夹" 
+                            Command="{Binding $parent[ItemsControl].DataContext.OpenFolderCommand}" 
+                            CommandParameter="{Binding}"
+                            Width="80" 
+                            Height="30" 
+                            Background="#2196F3" 
+                            Foreground="White"/>
+                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+        
+        <!-- 底部状态栏 -->
+        <Border Grid.Row="2" Background="#F5F5F5" Padding="10" BorderThickness="1,1,0,0" BorderBrush="#CCCCCC">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="共找到 " FontSize="12"/>
+                <TextBlock Text="{Binding Videos.Count}" FontSize="12" FontWeight="Bold"/>
+                <TextBlock Text=" 个视频文件" FontSize="12"/>
+                <Button Content="刷新" 
+                        Command="{Binding RefreshCommand}" 
+                        Margin="20,0,0,0" 
+                        Width="60" 
+                        Height="25"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

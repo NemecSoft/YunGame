@@ -1,0 +1,20 @@
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="TGBox.Views.DebugWindow" x:DataType="views:DebugViewModel" xmlns:views="using:TGBox.Views" Title="调试信息" Width="600" Height="400">
+    <StackPanel>
+        <TextBlock Text="Games 集合信息" FontSize="18" FontWeight="Bold" Margin="10"/>
+        <TextBlock Text="游戏数量: " Margin="10"/>
+        <TextBlock Text="{Binding GamesCount}" FontSize="24" Margin="10,0,10,20"/>
+        
+        <TextBlock Text="游戏列表" FontSize="16" FontWeight="Bold" Margin="10"/>
+        <ScrollViewer Height="200">
+            <ListBox ItemsSource="{Binding GamesList}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding}" Margin="10"/>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </ScrollViewer>
+        
+        <Button Content="关闭" Command="{Binding CloseCommand}" HorizontalAlignment="Center" Margin="20"/>
+    </StackPanel>
+</Window>

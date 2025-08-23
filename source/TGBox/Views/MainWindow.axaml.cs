@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Markup.Xaml;
 
 namespace TGBox.Views;
 
@@ -6,7 +7,8 @@ public partial class MainWindow : Window
 {
     public MainWindow()
     {
-        InitializeComponent();
+        AvaloniaXamlLoader.Load(this);
+        DataContext = new ViewModels.MainWindowViewModel();
     }
     
     // 最小化窗口

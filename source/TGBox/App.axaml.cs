@@ -23,35 +23,37 @@ public partial class App : Application
     {
         try
         {
-            Console.WriteLine("Avalonia应用程序初始化开始...");
-            
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
                 // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
                 DisableAvaloniaDataAnnotationValidation();
-                Console.WriteLine("创建MainWindow和MainWindowViewModel...");
                 desktop.MainWindow = new MainWindow
                 {
                     DataContext = new MainWindowViewModel(),
                 };
-                Console.WriteLine("MainWindow创建成功");
             }
 
             base.OnFrameworkInitializationCompleted();
-            Console.WriteLine("Avalonia应用程序初始化完成");
         }
         catch (Exception ex)
-        {
-            Console.WriteLine("应用程序启动异常: " + ex.Message);
-            Console.WriteLine("异常堆栈: " + ex.StackTrace);
-            if (ex.InnerException != null)
             {
-                Console.WriteLine("内部异常: " + ex.InnerException.Message);
-                Console.WriteLine("内部异常堆栈: " + ex.InnerException.StackTrace);
+                try
+                {
+                    // 记录应用程序启动异常信息到控制台
+                    // 这是应用程序无法正常初始化时的最后错误报告机制
+                    Console.WriteLine("应用程序启动异常: " + ex.Message);
+                    Console.WriteLine("异常堆栈: " + ex.StackTrace);
+                    if (ex.InnerException != null)
+                    {
+                        Console.WriteLine("内部异常: " + ex.InnerException.Message);
+                        Console.WriteLine("内部异常堆栈: " + ex.InnerException.StackTrace);
+                    }
+                }
+                catch { }
+                
+                throw;
             }
-            throw;
-        }
     }
 
     private void DisableAvaloniaDataAnnotationValidation()

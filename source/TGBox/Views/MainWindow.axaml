@@ -2,8 +2,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:TGBox.ViewModels"
         xmlns:m="using:TGBox.Models"
+        xmlns:s="using:TGBox.Selectors"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:conv="using:Avalonia.Controls.Converters"
+        xmlns:converters="using:TGBox.Converters"
         mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
         x:Class="TGBox.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
@@ -14,12 +17,168 @@
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaChromeHints="NoChrome"
         ExtendClientAreaTitleBarHeightHint="-1">
+    <Window.Resources>
+        <!-- 卡片列表模式模板 - 直接定义单个游戏项的显示方式 -->
+        <DataTemplate x:Key="CardListTemplate" DataType="m:Game">
+            <Border Margin="5" BorderThickness="1" BorderBrush="#CCCCCC" CornerRadius="8" Padding="15">
+                <Grid ColumnDefinitions="Auto,1*,Auto" RowDefinitions="Auto,Auto,Auto">
+                    <!-- 游戏图标 -->
+                    <Image Grid.Row="0" Grid.Column="0" Grid.RowSpan="3" Width="60" Height="60" Margin="0,0,15,0" Stretch="UniformToFill">
+                        <Image.Source>
+                            <Binding Path="IconPath">
+                                <Binding.TargetNullValue>
+                                    <Bitmap>avares://TGBox/Assets/avalonia-logo.ico</Bitmap>
+                                </Binding.TargetNullValue>
+                            </Binding>
+                        </Image.Source>
+                    </Image>
+                      
+                    <!-- 游戏基本信息 -->
+                    <StackPanel Grid.Row="0" Grid.Column="1" Spacing="5">
+                        <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="16"/>
+                        <TextBlock Text="{Binding AlternativeName}" FontSize="14" Opacity="0.8" TextWrapping="Wrap"/>
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <TextBlock Text="{Binding Genre}" FontSize="12" Opacity="0.7"/>
+                            <TextBlock Text="{Binding ReleaseYear}" FontSize="12" Opacity="0.7"/>
+                            <TextBlock Text="{Binding Version}" FontSize="12" Opacity="0.7"/>
+                        </StackPanel>
+                    </StackPanel>
+                      
+                    <!-- 游戏图片展示 -->
+                    <ScrollViewer Grid.Row="1" Grid.Column="1" Height="120" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Hidden">
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <Image Width="100" Height="100" Margin="2" Stretch="UniformToFill">
+                                <Image.Source>
+                                    <Binding Path="IconPath">
+                                        <Binding.TargetNullValue>
+                                            <Bitmap>avares://TGBox/Assets/avalonia-logo.ico</Bitmap>
+                                        </Binding.TargetNullValue>
+                                    </Binding>
+                                </Image.Source>
+                            </Image>
+                            <Image Width="100" Height="100" Margin="2" Stretch="UniformToFill">
+                                <Image.Source>
+                                    <Binding Path="CoverPath">
+                                        <Binding.TargetNullValue>
+                                            <Bitmap>avares://TGBox/Assets/avalonia-logo.ico</Bitmap>
+                                        </Binding.TargetNullValue>
+                                    </Binding>
+                                </Image.Source>
+                            </Image>
+                            <Image Width="100" Height="100" Margin="2" Stretch="UniformToFill">
+                                <Image.Source>
+                                    <Binding Path="Screenshot1">
+                                        <Binding.TargetNullValue>
+                                            <Bitmap>avares://TGBox/Assets/avalonia-logo.ico</Bitmap>
+                                        </Binding.TargetNullValue>
+                                    </Binding>
+                                </Image.Source>
+                            </Image>
+                            <Image Width="100" Height="100" Margin="2" Stretch="UniformToFill">
+                                <Image.Source>
+                                    <Binding Path="Screenshot2">
+                                        <Binding.TargetNullValue>
+                                            <Bitmap>avares://TGBox/Assets/avalonia-logo.ico</Bitmap>
+                                        </Binding.TargetNullValue>
+                                    </Binding>
+                                </Image.Source>
+                            </Image>
+                            <Image Width="100" Height="100" Margin="2" Stretch="UniformToFill">
+                                <Image.Source>
+                                    <Binding Path="Screenshot3">
+                                        <Binding.TargetNullValue>
+                                            <Bitmap>avares://TGBox/Assets/avalonia-logo.ico</Bitmap>
+                                        </Binding.TargetNullValue>
+                                    </Binding>
+                                </Image.Source>
+                            </Image>
+                            <Image Width="100" Height="100" Margin="2" Stretch="UniformToFill">
+                                <Image.Source>
+                                    <Binding Path="Screenshot4">
+                                        <Binding.TargetNullValue>
+                                            <Bitmap>avares://TGBox/Assets/avalonia-logo.ico</Bitmap>
+                                        </Binding.TargetNullValue>
+                                    </Binding>
+                                </Image.Source>
+                            </Image>
+                        </StackPanel>
+                    </ScrollViewer>
+                      
+                    <!-- 操作按钮 -->
+                    <StackPanel Grid.Row="0" Grid.Column="2" Grid.RowSpan="3" Orientation="Vertical" Spacing="5" VerticalAlignment="Center">
+                        <Button Content="开始游戏" Command="{Binding DataContext.LaunchGameCommand, ElementName=MainWindowView}"
+                                CommandParameter="{Binding}" IsEnabled="{Binding IsInstalled}" 
+                                Width="80" Height="30" Background="#4CAF50" Foreground="White"/>
+                        <Button Content="编辑游戏" Width="80" Height="30" Background="#2196F3" Foreground="White" Command="{Binding DataContext.EditGameCommand, ElementName=MainWindowView}" CommandParameter="{Binding}"/>
+                        <Button Content="删除游戏" Width="80" Height="30" Background="#F44336" Foreground="White" Command="{Binding DataContext.DeleteGameCommand, ElementName=MainWindowView}" CommandParameter="{Binding}"/>
+                        <Button Content="存档管理" Width="80" Height="30" Background="#FF9800" Foreground="White"/>
+                        <Button Content="游戏版本" Width="80" Height="30" Background="#9C27B0" Foreground="White"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <!-- 网格模式模板 - 直接定义单个游戏项的显示方式 -->
+        <DataTemplate x:Key="GridTemplate" DataType="m:Game">
+            <Border Margin="5" Background="{DynamicResource GridItemBackgroundColor}" Padding="8" CornerRadius="8" BorderThickness="1" BorderBrush="#CCCCCC">
+                <StackPanel Spacing="5">
+                    <!-- 游戏封面 -->
+                    <Image Width="160" Height="120" Stretch="UniformToFill">
+                        <Image.Source>
+                            <Binding Path="CoverPath">
+                                <Binding.TargetNullValue>
+                                    <Bitmap>avares://TGBox/Assets/avalonia-logo.ico</Bitmap>
+                                </Binding.TargetNullValue>
+                            </Binding>
+                        </Image.Source>
+                    </Image>
+                      
+                    <!-- 游戏名称 -->
+                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14" TextWrapping="Wrap" MaxHeight="40"/>
+                      
+                    <!-- 游戏信息 -->
+                    <StackPanel Spacing="2">
+                            <TextBlock Text="{Binding Genre}" FontSize="11" Opacity="0.7"/>
+                            <TextBlock Text="{Binding ReleaseDate, StringFormat='发布日期: {0}'}" Margin="0,5,0,0" Foreground="#9E9E9E" FontSize="12"/>
+                            <TextBlock Text="{Binding Version, StringFormat='版本: {0}'}" Margin="0,5,0,0" Foreground="#9E9E9E" FontSize="12"/>
+                            <TextBlock Text="{Binding GameLevel, StringFormat='游戏级别: {0}'}" Margin="0,5,0,0" Foreground="#9E9E9E" FontSize="12"/>
+                        </StackPanel>
+                      
+                    <!-- 快速操作按钮 -->
+                    <StackPanel Orientation="Horizontal" Spacing="3" HorizontalAlignment="Center">
+                        <Button Content="▶" Width="25" Height="25" Background="#4CAF50" Foreground="White" 
+                                Command="{Binding DataContext.LaunchGameCommand, ElementName=MainWindowView}" 
+                                CommandParameter="{Binding}" 
+                                IsEnabled="{Binding IsInstalled}" 
+                                ToolTip.Tip="开始游戏"/>
+                        <Button Content="✎" Width="25" Height="25" Background="#2196F3" Foreground="White" 
+                                Command="{Binding DataContext.EditGameCommand, ElementName=MainWindowView}"
+                                CommandParameter="{Binding}"
+                                ToolTip.Tip="编辑游戏"/>
+                        <Button Content="🗑" Width="25" Height="25" Background="#F44336" Foreground="White" 
+                                Command="{Binding DataContext.DeleteGameCommand, ElementName=MainWindowView}"
+                                CommandParameter="{Binding}"
+                                ToolTip.Tip="删除游戏"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <!-- 游戏列表样式已直接设置在控件上 -->
+        
+        <!-- 枚举到布尔值的转换器 -->
+        <converters:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
+        
+        <!-- 枚举到描述的转换器 -->
+        <converters:EnumToDescriptionConverter x:Key="EnumToDescriptionConverter"/>
+    </Window.Resources>
+
     <Window.Styles>
         <!-- 主窗口背景 -->
         <Style Selector="Window">
-            <Setter Property="Background" Value="{DynamicResource WindowBackgourndBrush}" />
+            <Setter Property="Background" Value="{DynamicResource WindowBackgroundBrush}" />
         </Style>
-        
+         
         <!-- 自定义窗口按钮样式 -->
         <Style Selector="Button[Name=WindowControlButton]">
             <Setter Property="Background" Value="Transparent" />
@@ -29,74 +188,43 @@
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="FontSize" Value="16" />
         </Style>
-        
+         
         <Style Selector="Button[Name=WindowControlButton]:pointerover">
             <Setter Property="Background" Value="{DynamicResource HoverColor}" />
         </Style>
-        
+         
         <!-- 文本颜色 -->
         <Style Selector="TextBlock">
             <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
         </Style>
-        
-        <!-- 按钮样式 -->
-        <Style Selector="Button">
-            <Setter Property="Background" Value="{DynamicResource ButtonBackgroundBrush}" />
-            <Setter Property="Foreground" Value="White" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Padding" Value="8 4" />
-            <Setter Property="CornerRadius" Value="3" />
-        </Style>
-        
+         
         <!-- 边框样式 -->
         <Style Selector="Border">
-            <Setter Property="BorderBrush" Value="{DynamicResource WindowPanelSeparatorBrush}" />
-            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Background" Value="{DynamicResource ElementBackgroundColor}" />
         </Style>
-        
-        <!-- 主要布局容器 -->
+         
+        <!-- 网格背景 -->
         <Style Selector="Grid">
-            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Background" Value="{DynamicResource ElementBackgroundColor}" />
         </Style>
-        
-        <Style Selector="StackPanel">
-            <Setter Property="Background" Value="Transparent" />
-        </Style>
-        
-
-        
-        <!-- 列表控件 -->
+         
+        <!-- 列表控件样式 -->
         <Style Selector="ListBox">
-            <Setter Property="Background" Value="{DynamicResource BackgroundToneColor}" />
-            <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+            <Setter Property="Background" Value="{DynamicResource ElementBackgroundColor}" />
+            <Setter Property="BorderThickness" Value="0" />
         </Style>
-        
-        <Style Selector="ListBoxItem">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
-        </Style>
-        
-        <!-- 下拉列表 -->
-        <Style Selector="ComboBox">
-            <Setter Property="Background" Value="{DynamicResource ButtonBackgroundBrush}" />
-            <Setter Property="Foreground" Value="White" />
-        </Style>
-        
-
     </Window.Styles>
 
     <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <vm:MainWindowViewModel/>
+        <vm:MainWindowViewModel />
     </Design.DataContext>
 
-    <Grid RowDefinitions="Auto,1*">
+    <Grid RowDefinitions="Auto,1*,Auto">
         <!-- 自定义标题栏 -->
         <Grid x:Name="TitleBar" Background="{DynamicResource MainColorDark}" IsHitTestVisible="True" ColumnDefinitions="Auto,1*,Auto">
             <!-- 应用标题 -->
             <TextBlock Grid.Column="0" Text="太极盒 - TGBox" VerticalAlignment="Center" Margin="10" FontSize="14" />
-            
+             
             <!-- 窗口控制按钮 -->
             <StackPanel Grid.Column="2" Orientation="Horizontal" IsHitTestVisible="True">
                 <Button Name="MinimizeButton" Content="━" Click="MinimizeClick" />
@@ -104,107 +232,144 @@
                 <Button Name="CloseButton" Content="✕" Click="CloseClick" />
             </StackPanel>
         </Grid>
-        
+         
         <!-- 主内容区域 -->
-        <Grid Grid.Row="1" ColumnDefinitions="2*,3*" RowDefinitions="Auto,1*">
+        <Grid Grid.Row="1" ColumnDefinitions="1*" RowDefinitions="Auto,1*">
             <!-- 顶部工具栏 -->
-            <StackPanel Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="5" Spacing="5">
-            <Button Content="添加游戏" Margin="5"/>
-            <Button Content="导入游戏" Margin="5"/>
-            <Button Content="刷新列表" Margin="5"/>
-            <Button Content="游戏统计" Margin="5"/>
-            <TextBlock Text="{Binding Games.Count} 款游戏" Margin="10,5" VerticalAlignment="Center"/>
+        <StackPanel Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="5" Spacing="5">
+            <!-- 模式切换 -->
+            <Button Content="{Binding CurrentAppMode, StringFormat='模式: {0}'}"
+                    Command="{Binding ToggleAppModeCommand}"
+                    Margin="5"
+                    Width="120"
+                    Background="{Binding CurrentAppMode, Converter={StaticResource ModeColorConverter}}"/>
+             
+            <!-- 管理模式功能 -->
+            <Button Content="添加游戏"
+                    Command="{Binding AddGameCommand}"
+                    Margin="5"
+                    IsVisible="{Binding IsManageModeVisible}"/>
+            <Button Content="导入游戏"
+                    Command="{Binding ImportGamesCommand}"
+                    Margin="5"
+                    IsVisible="{Binding IsManageModeVisible}"/>
+            <Button Content="刷新列表"
+                    Command="{Binding LoadGamesCommand}"
+                    Margin="5"/>
+            <Button Content="游戏统计"
+                    Margin="5"/>
+            <Button Content="调试信息"
+                    Command="{Binding ShowDebugWindowCommand}"
+                    Margin="5"/>
+            <!-- 广告显示开关 - 仅在管理模式下显示 -->
+            <Button Content="{Binding IsAdVisible, StringFormat='广告: {0}'}"
+                    Command="{Binding ToggleAdVisibilityCommand}"
+                    Margin="5"
+                    IsVisible="{Binding IsManageModeVisible}"/>
+            <!-- 显示模式下拉列表 -->
+            <ComboBox ItemsSource="{Binding DisplayModeOptions}"
+                      SelectedItem="{Binding CurrentDisplayMode, Mode=TwoWay}"
+                      Width="120"
+                      Margin="5">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding ., Converter={StaticResource EnumToDescriptionConverter}}"/>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+             
+            <TextBlock Text="{Binding Games.Count} 款游戏"
+                       Margin="10,5"
+                       VerticalAlignment="Center"/>
             <ComboBox 
                 ItemsSource="{Binding ThemeItems}"
                 SelectedItem="{Binding SelectedThemeItem}"
                 Width="120"
-                Margin="5"
-                HorizontalAlignment="Right"/>
-            <!-- 移除旧的主题切换按钮 -->
+                Margin="5"/>
         </StackPanel>
 
-        <!-- 左侧游戏列表 -->
-        <Border Grid.Row="1" Margin="5" BorderThickness="1" BorderBrush="#CCCCCC">
-            <ListBox ItemsSource="{Binding Games}" SelectedItem="{Binding SelectedGame}">
-                <!-- Avalonia ListBox 默认已启用虚拟化，无需额外设置 -->
-                <ListBox.ItemTemplate>
-                    <DataTemplate DataType="m:Game">
-                        <StackPanel Margin="5" Orientation="Horizontal" Spacing="10">
-                            <Image Width="40" Height="40" Stretch="UniformToFill">
-                                <Image.Source>
-                                    <Binding Path="IconPath">
-                                        <Binding.TargetNullValue>
-                                            <Bitmap>avares://TGBox/Assets/avalonia-logo.ico</Bitmap>
-                                        </Binding.TargetNullValue>
-                                    </Binding>
-                                </Image.Source>
-                            </Image>
-                            <StackPanel>
-                                <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
-                                <TextBlock Text="{Binding Genre}" FontSize="12" Opacity="0.7"/>
-                                <TextBlock Text="{Binding ReleaseYear}" FontSize="12" Opacity="0.7"/>
-                            </StackPanel>
-                        </StackPanel>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+        <!-- 游戏列表 -->
+        <Border Grid.Row="1" Grid.Column="0" Margin="5" BorderThickness="1" BorderBrush="#CCCCCC">
+            <ScrollViewer>
+                <StackPanel>
+                    <!-- 空列表提示 -->
+                    <TextBlock Text="暂无游戏数据" 
+                               IsVisible="{Binding !Games.Count}" 
+                               HorizontalAlignment="Center" 
+                               VerticalAlignment="Center"
+                               FontSize="18" 
+                               Opacity="0.6"
+                               Margin="50"/>
+                    
+                    <!-- 基于显示模式显示不同的列表 -->
+                    <!-- 卡片列表视图 -->
+                    <ListBox ItemsSource="{Binding Games}" SelectedItem="{Binding SelectedGame}"
+                             Margin="0" Background="{DynamicResource ElementBackgroundColor}" BorderThickness="0"
+                             MinHeight="100"
+                             IsVisible="{Binding CurrentDisplayMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static vm:GameDisplayMode.CardList}}">
+                        <ListBox.ItemTemplate>
+                            <StaticResource ResourceKey="CardListTemplate"/>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    
+                    <!-- 网格视图 -->
+                    <ListBox ItemsSource="{Binding Games}" SelectedItem="{Binding SelectedGame}"
+                             Margin="0" Background="{DynamicResource ElementBackgroundColor}" BorderThickness="0"
+                             MinHeight="100"
+                             IsVisible="{Binding CurrentDisplayMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static vm:GameDisplayMode.Grid}}">
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal" ItemWidth="250" ItemHeight="180"/>
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                        <ListBox.ItemTemplate>
+                            <StaticResource ResourceKey="GridTemplate"/>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </StackPanel>
+            </ScrollViewer>
         </Border>
 
-        <!-- 右侧游戏详情 -->
-        <Border Grid.Row="1" Grid.Column="1" Margin="5" BorderThickness="1" BorderBrush="#CCCCCC">
-            <StackPanel Margin="10" DataContext="{Binding SelectedGame}">
-                <Grid ColumnDefinitions="Auto,1*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,1*">
-                    <!-- 游戏封面 -->
-                    <Image Grid.Row="0" Grid.Column="0" Width="200" Height="300" Margin="5" Stretch="UniformToFill">
-                        <Image.Source>
-                            <Binding Path="CoverPath">
-                                <Binding.TargetNullValue>
-									<Bitmap>avares://TGBox/Assets/avalonia-logo.ico</Bitmap>
-                                </Binding.TargetNullValue>
-                            </Binding>
-                        </Image.Source>
-                    </Image>
-
-                    <!-- 游戏信息 -->
-                    <StackPanel Grid.Row="0" Grid.Column="1" Margin="10" Spacing="5">
-                        <TextBlock Text="{Binding Name}" FontSize="24" FontWeight="Bold"/>
-                        <StackPanel Orientation="Horizontal" Spacing="10">
-                            <TextBlock Text="{Binding Genre}"/>
-                            <TextBlock Text="|"/>
-                            <TextBlock Text="{Binding ReleaseYear}"/>
-                            <TextBlock Text="|"/>
-                            <TextBlock Text="{Binding Platform}"/>
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="游玩时间: "/>
-                            <TextBlock Text="{Binding PlayTime, StringFormat='0 分钟'}"/>
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="最后游玩: "/>
-                            <TextBlock Text="{Binding LastPlayed, StringFormat='yyyy-MM-dd HH:mm'}"/>
-                        </StackPanel>
-                        <TextBlock Text="{Binding IsInstalled, StringFormat='状态: 0'}"/>
-                    </StackPanel>
-
-                    <!-- 游戏描述 -->
-                    <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Margin="5" Text="游戏简介" FontWeight="Bold"/>
-                    <TextBlock Grid.Row="2" Grid.ColumnSpan="2" Margin="5" Text="{Binding Description}" TextWrapping="Wrap"/>
-
-                    <!-- 操作按钮 -->
-                    <StackPanel Grid.Row="3" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="5" Spacing="10">
-                        <Button Content="启动游戏" Command="{Binding DataContext.LaunchGameCommand, ElementName=MainWindowView}"
-                                CommandParameter="{Binding}" IsEnabled="{Binding IsInstalled}" Width="100"/>
-                        <Button Content="编辑游戏" Width="100"/>
-                        <Button Content="删除游戏" Width="100"/>
-                        <Button Content="设置封面" Width="100"/>
-                    </StackPanel>
-
-                    <!-- 性能信息 -->
-                    <TextBlock Grid.Row="4" Grid.ColumnSpan="2" Margin="5" Text="性能信息" FontWeight="Bold"/>
-                    <TextBlock Grid.Row="5" Grid.ColumnSpan="2" Margin="5" Text="基于Avalonia框架的高性能虚拟面板 - 支持10000+游戏无卡顿滚动"/>
-                </Grid>
-            </StackPanel>
-        </Border>
-        </Grid>
+    <!-- 底部操作区域 -->
+    <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Right" Margin="10,10,10,10" VerticalAlignment="Bottom">
+        <!-- 调试信息按钮已移除 -->
+    </StackPanel>
+    
+    </Grid>
+    
+    <!-- 广告显示区域 -->
+    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5" IsVisible="{Binding IsAdVisible}">
+        <Button Command="{Binding LaunchAdCommand}"
+                Cursor="Hand"
+                Margin="5"
+                Padding="10,5"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+            <Button.Styles>
+                <Style Selector="Button">
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="BorderBrush" Value="Transparent"/>
+                    <Setter Property="BorderThickness" Value="0"/>
+                </Style>
+                <Style Selector="Button:pointerover">
+                    <Setter Property="Background" Value="Transparent"/>
+                </Style>
+                <Style Selector="Button:pressed">
+                    <Setter Property="Background" Value="Transparent"/>
+                </Style>
+            </Button.Styles>
+            <TextBlock Text="{Binding AdContent}">
+                <TextBlock.Styles>
+                    <Style Selector="TextBlock">
+                        <Setter Property="Foreground" Value="#2196F3"/>
+                        <Setter Property="TextDecorations" Value="Underline"/>
+                    </Style>
+                    <Style Selector="TextBlock:pointerover">
+                        <Setter Property="Foreground" Value="#1976D2"/>
+                    </Style>
+                </TextBlock.Styles>
+            </TextBlock>
+        </Button>
+    </StackPanel>
     </Grid>
 </Window>

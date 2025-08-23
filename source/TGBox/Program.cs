@@ -1,5 +1,6 @@
 using Avalonia;
 using System;
+using System.Text;
 using Avalonia.ReactiveUI;
 
 namespace TGBox;
@@ -10,8 +11,13 @@ sealed class Program
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
     // yet and stuff might break.
     [STAThread]
-    public static void Main(string[] args) => BuildAvaloniaApp()
-        .StartWithClassicDesktopLifetime(args);
+    public static void Main(string[] args)
+    {
+        // 设置控制台编码为UTF-8以正确显示中文
+        Console.OutputEncoding = Encoding.UTF8;
+        BuildAvaloniaApp()
+            .StartWithClassicDesktopLifetime(args);
+    }
 
     // Avalonia configuration, don't remove; also used by visual designer.
     public static AppBuilder BuildAvaloniaApp()

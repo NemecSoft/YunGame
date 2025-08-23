@@ -9,14 +9,31 @@ using Avalonia;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Media;
 using TGBox.Models;
 using System.Diagnostics;
 using System.ComponentModel;
 using System.Reactive.Linq;
 // 注释：Material.Avalonia包不使用Material.Styles.Themes命名空间
+using TGBox.Views;
 
 namespace TGBox.ViewModels;
+
+/// <summary>
+/// 游戏显示模式枚举
+/// </summary>
+public enum GameDisplayMode
+{
+    /// <summary>
+    /// 卡片列表模式
+    /// </summary>
+    CardList,
+    /// <summary>
+    /// 网格模式
+    /// </summary>
+    Grid
+}
 
 /// <summary>
 /// 主题类型枚举
@@ -97,6 +114,86 @@ public class MainWindowViewModel : ViewModelBase
     /// </summary>
     [Reactive] public ThemeItem SelectedThemeItem { get; set; }
     
+    /// <summary>
+    /// 当前游戏显示模式
+    /// </summary>
+    [Reactive] public GameDisplayMode CurrentDisplayMode { get; set; } = GameDisplayMode.CardList;
+    
+    /// <summary>
+    /// 当前应用模式
+    /// </summary>
+    [Reactive] public AppMode CurrentAppMode { get; set; } = AppMode.PlayMode;
+    
+    /// <summary>
+    /// 管理模式可见性
+    /// </summary>
+    [Reactive] public bool IsManageModeVisible { get; set; } = false;
+    
+    /// <summary>
+    /// 显示模式选项
+    /// </summary>
+    public List<GameDisplayMode> DisplayModeOptions { get; } = Enum.GetValues<GameDisplayMode>().ToList();
+    
+    /// <summary>
+    /// 切换应用模式命令
+    /// </summary>
+    public ReactiveCommand<Unit, Unit> ToggleAppModeCommand { get; }
+    
+    /// <summary>
+    /// 添加游戏命令
+    /// </summary>
+    public ReactiveCommand<Unit, Unit> AddGameCommand { get; }
+    
+    /// <summary>
+    /// 导入游戏命令
+    /// </summary>
+    public ReactiveCommand<Unit, Unit> ImportGamesCommand { get; }
+    
+    /// <summary>
+    /// 加载游戏命令
+    /// </summary>
+    public ReactiveCommand<Unit, Unit> LoadGamesCommand { get; }
+    
+    /// <summary>
+    /// 显示调试窗口命令
+    /// </summary>
+    public ReactiveCommand<Unit, Unit> ShowDebugWindowCommand { get; }
+    
+    /// <summary>
+    /// 编辑游戏命令
+    /// </summary>
+    public ReactiveCommand<Game, Unit> EditGameCommand { get; }
+    
+    /// <summary>
+    /// 删除游戏命令
+    /// </summary>
+    public ReactiveCommand<Game, Unit> DeleteGameCommand { get; }
+    
+    /// <summary>
+    /// 广告显示状态
+    /// </summary>
+    [Reactive] public bool IsAdVisible { get; set; } = true;
+    
+    /// <summary>
+    /// 广告内容
+    /// </summary>
+    [Reactive] public string AdContent { get; set; } = "太极盒TGBox - 游戏管理利器";
+    
+    /// <summary>
+    /// 广告链接
+    /// </summary>
+    [Reactive] public string AdLink { get; set; } = "https://example.com";
+    
+    /// <summary>
+    /// 切换广告显示状态命令
+    /// </summary>
+    public ReactiveCommand<Unit, Unit> ToggleAdVisibilityCommand { get; }
+    
+    /// <summary>
+    /// 启动广告链接命令
+    /// </summary>
+    public ReactiveCommand<Unit, Unit> LaunchAdCommand { get; }
+
     public MainWindowViewModel()
     {
         _gameDatabase = new GameDatabase();
@@ -104,6 +201,15 @@ public class MainWindowViewModel : ViewModelBase
         // 初始化命令
             LaunchGameCommand = ReactiveCommand.Create<Game>(LaunchGame);
             ToggleThemeCommand = ReactiveCommand.Create(ToggleTheme);
+            ToggleAppModeCommand = ReactiveCommand.Create(ToggleAppMode);
+            AddGameCommand = ReactiveCommand.Create(AddGame);
+            ImportGamesCommand = ReactiveCommand.Create(ImportGames);
+            LoadGamesCommand = ReactiveCommand.Create(LoadGames);
+            ShowDebugWindowCommand = ReactiveCommand.Create(ShowDebugWindow);
+            EditGameCommand = ReactiveCommand.Create<Game>(EditGame);
+            DeleteGameCommand = ReactiveCommand.Create<Game>(DeleteGame);
+            ToggleAdVisibilityCommand = ReactiveCommand.Create(ToggleAdVisibility);
+            LaunchAdCommand = ReactiveCommand.Create(LaunchAd);
             
             // 初始化主题列表
             ThemeItems.Add(new ThemeItem { DisplayName = "浅色主题", ThemeType = ThemeType.Light });
@@ -435,6 +541,96 @@ public class MainWindowViewModel : ViewModelBase
     }
     
     /// <summary>
+    /// 切换应用模式（Normal->Manage->Normal循环）
+    /// </summary>
+    private void ToggleAppMode()
+    {
+        CurrentAppMode = CurrentAppMode == AppMode.PlayMode ? AppMode.ManageMode : AppMode.PlayMode;
+        IsManageModeVisible = CurrentAppMode == AppMode.ManageMode;
+    }
+    
+    /// <summary>
+    /// 添加游戏
+    /// </summary>
+    private void AddGame()
+    {
+        // 在实际应用中，这里应该打开添加游戏的窗口
+        Console.WriteLine("添加游戏功能待实现");
+    }
+    
+    /// <summary>
+    /// 导入游戏
+    /// </summary>
+    private void ImportGames()
+    {
+        // 在实际应用中，这里应该打开文件选择器让用户选择游戏目录
+        Console.WriteLine("导入游戏功能待实现");
+    }
+    
+    /// <summary>
+    /// 显示调试窗口
+    /// </summary>
+    private void ShowDebugWindow()
+    {
+        try
+        {
+            if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                var debugWindow = new DebugWindow();
+                debugWindow.Show();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"显示调试窗口失败: {ex.Message}");
+        }
+    }
+    
+    /// <summary>
+    /// 编辑游戏
+    /// </summary>
+    /// <param name="game">要编辑的游戏</param>
+    private void EditGame(Game game)
+    {
+        if (game == null)
+            return;
+            
+        try
+        {
+            if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                var editWindow = new GameEditWindow();
+                editWindow.DataContext = game;
+                editWindow.ShowDialog(desktop.MainWindow);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"编辑游戏失败: {ex.Message}");
+        }
+    }
+    
+    /// <summary>
+    /// 删除游戏
+    /// </summary>
+    /// <param name="game">要删除的游戏</param>
+    private void DeleteGame(Game game)
+    {
+        if (game == null)
+            return;
+            
+        try
+        {
+            _gameDatabase.DeleteGame(game.GameId);
+            Games.Remove(game);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"删除游戏失败: {ex.Message}");
+        }
+    }
+    
+    /// <summary>
     /// 切换应用程序主题（Light->Dark->Red->Light循环）
     /// </summary>
     private void ToggleTheme()
@@ -493,13 +689,58 @@ public class MainWindowViewModel : ViewModelBase
             {
                 Console.WriteLine("警告: Application.Current为空，无法切换主题");
             }
+        } catch (Exception ex)
+            {
+                Console.WriteLine($"主题切换内部方法异常: {ex.Message}");
+                Console.WriteLine($"异常堆栈: {ex.StackTrace}");
+            }
         }
-        catch (Exception ex)
+        
+        /// <summary>
+        /// 切换广告显示状态
+        /// </summary>
+        private void ToggleAdVisibility()
         {
-            Console.WriteLine($"主题切换内部方法异常: {ex.Message}");
-            Console.WriteLine($"异常堆栈: {ex.StackTrace}");
+            IsAdVisible = !IsAdVisible;
+            Console.WriteLine($"广告显示状态已切换为: {IsAdVisible}");
         }
-    }
+        
+        /// <summary>
+        /// 启动广告链接
+        /// </summary>
+        private void LaunchAd()
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(AdLink))
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = AdLink,
+                        UseShellExecute = true
+                    });
+                    Console.WriteLine($"已打开广告链接: {AdLink}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"打开广告链接失败: {ex.Message}");
+            }
+        }
+        
+        /// <summary>
+        /// 设置广告内容
+        /// </summary>
+        /// <param name="content">广告内容</param>
+        /// <param name="link">广告链接</param>
+        public void SetAdContent(string content, string link = null)
+        {
+            AdContent = content;
+            if (!string.IsNullOrEmpty(link))
+            {
+                AdLink = link;
+            }
+        }
     
 
 }
