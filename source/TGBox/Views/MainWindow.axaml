@@ -104,8 +104,8 @@
                         </StackPanel>
                     </ScrollViewer>
                       
-                    <!-- 操作按钮 -->
-                    <StackPanel Grid.Row="0" Grid.Column="2" Grid.RowSpan="3" Orientation="Vertical" Spacing="5" VerticalAlignment="Center">
+                    <!-- 操作按钮 - 横向排列在游戏名称右侧 -->
+                    <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="5" HorizontalAlignment="Right" VerticalAlignment="Center">
                         <Button Content="开始游戏" Command="{Binding DataContext.LaunchGameCommand, ElementName=MainWindowView}"
                                 CommandParameter="{Binding}" IsEnabled="{Binding IsInstalled}" 
                                 Width="80" Height="30" Background="#4CAF50" Foreground="White"/>
@@ -113,6 +113,7 @@
                         <Button Content="删除游戏" Width="80" Height="30" Background="#F44336" Foreground="White" Command="{Binding DataContext.DeleteGameCommand, ElementName=MainWindowView}" CommandParameter="{Binding}"/>
                         <Button Content="存档管理" Width="80" Height="30" Background="#FF9800" Foreground="White"/>
                         <Button Content="游戏版本" Width="80" Height="30" Background="#9C27B0" Foreground="White"/>
+                        <Button Content="视频攻略" Width="80" Height="30" Background="#00BCD4" Foreground="White" Command="{Binding DataContext.ShowVideoGuideCommand, ElementName=MainWindowView}" CommandParameter="{Binding}"/>
                     </StackPanel>
                 </Grid>
             </Border>
@@ -159,6 +160,10 @@
                                 Command="{Binding DataContext.DeleteGameCommand, ElementName=MainWindowView}"
                                 CommandParameter="{Binding}"
                                 ToolTip.Tip="删除游戏"/>
+                        <Button Content="▶▶" Width="25" Height="25" Background="#FF9800" Foreground="White" 
+                                Command="{Binding DataContext.ShowVideoGuideCommand, ElementName=MainWindowView}"
+                                CommandParameter="{Binding}"
+                                ToolTip.Tip="视频攻略"/>
                     </StackPanel>
                 </StackPanel>
             </Border>

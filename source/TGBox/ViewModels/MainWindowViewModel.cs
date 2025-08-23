@@ -15,6 +15,8 @@ using TGBox.Models;
 using System.Diagnostics;
 using System.ComponentModel;
 using System.Reactive.Linq;
+using System.IO;
+using System.Reflection;
 // 注释：Material.Avalonia包不使用Material.Styles.Themes命名空间
 using TGBox.Views;
 
@@ -160,6 +162,11 @@ public class MainWindowViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> ShowDebugWindowCommand { get; }
     
     /// <summary>
+    /// 调试视图模型，用于显示调试信息
+    /// </summary>
+    public Views.DebugViewModel? DebugViewModel { get; set; }
+    
+    /// <summary>
     /// 编辑游戏命令
     /// </summary>
     public ReactiveCommand<Game, Unit> EditGameCommand { get; }
@@ -193,6 +200,11 @@ public class MainWindowViewModel : ViewModelBase
     /// 启动广告链接命令
     /// </summary>
     public ReactiveCommand<Unit, Unit> LaunchAdCommand { get; }
+    
+    /// <summary>
+    /// 显示游戏视频攻略命令
+    /// </summary>
+    public ReactiveCommand<Game, Unit> ShowVideoGuideCommand { get; }
 
     public MainWindowViewModel()
     {
@@ -210,6 +222,7 @@ public class MainWindowViewModel : ViewModelBase
             DeleteGameCommand = ReactiveCommand.Create<Game>(DeleteGame);
             ToggleAdVisibilityCommand = ReactiveCommand.Create(ToggleAdVisibility);
             LaunchAdCommand = ReactiveCommand.Create(LaunchAd);
+            ShowVideoGuideCommand = ReactiveCommand.Create<Game>(ShowVideoGuide);
             
             // 初始化主题列表
             ThemeItems.Add(new ThemeItem { DisplayName = "浅色主题", ThemeType = ThemeType.Light });
@@ -576,7 +589,14 @@ public class MainWindowViewModel : ViewModelBase
         {
             if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                var debugWindow = new DebugWindow();
+                // 确保DebugViewModel已初始化
+                if (DebugViewModel == null)
+                {
+                    DebugViewModel = new Views.DebugViewModel();
+                }
+                
+                // 使用带参数的构造函数创建DebugWindow
+                var debugWindow = new Views.DebugWindow(DebugViewModel);
                 debugWindow.Show();
             }
         }
@@ -712,19 +732,143 @@ public class MainWindowViewModel : ViewModelBase
         {
             try
             {
-                if (!string.IsNullOrEmpty(AdLink))
+                Process.Start(new ProcessStartInfo
                 {
-                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-                    {
-                        FileName = AdLink,
-                        UseShellExecute = true
-                    });
-                    Console.WriteLine($"已打开广告链接: {AdLink}");
-                }
+                    FileName = "https://www.bilibili.com",
+                    UseShellExecute = true
+                });
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"打开广告链接失败: {ex.Message}");
+                Debug.WriteLine("启动广告链接失败: " + ex.Message);
+            }
+        }
+        
+        /// <summary>
+        /// 显示游戏视频攻略
+        /// </summary>
+        /// <param name="game">游戏对象</param>
+        private void ShowVideoGuide(Game game)
+        {
+            try
+            {
+                // 添加调试日志
+                Debug.WriteLine($"[视频攻略] 尝试显示游戏 '{game.Name}' 的视频攻略");
+                
+                // 检查游戏名是否为空
+                if (string.IsNullOrEmpty(game.Name))
+                {
+                    Debug.WriteLine("[视频攻略] 游戏名称为空，导航到B站搜索");
+                    NavigateToBilibiliSearch(game.Name);
+                    return;
+                }
+                
+                // 获取游戏视频攻略目录（两种可能路径）
+                var appDataRoot = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                string logMessage = $"[视频攻略] APPDATA路径: {appDataRoot}";
+                Debug.WriteLine(logMessage);
+                DebugViewModel?.AddDebugLog(logMessage);
+                
+                var pathsToCheck = new List<string>{
+                    // 用户直接放在TGBox下的路径
+                    Path.Combine(appDataRoot, "TGBox", game.Name),
+                    // 系统预期的VideoGuides子目录路径
+                    Path.Combine(appDataRoot, "TGBox", "VideoGuides", game.Name)
+                };
+                
+                string[] videoExtensions = { ".mp4", ".avi", ".mkv", ".wmv", ".mov", ".flv", ".webm", ".m4v" };
+                List<string> allVideoFiles = new List<string>();
+                
+                // 检查所有可能的路径
+                foreach (var path in pathsToCheck)
+                {
+                    string pathCheckMessage = $"[视频攻略] 检查路径: {path}";
+                    Debug.WriteLine(pathCheckMessage);
+                    DebugViewModel?.AddDebugLog(pathCheckMessage);
+                    if (System.IO.Directory.Exists(path))
+                    {
+                        string pathExistsMessage = $"[视频攻略] 路径存在: {path}";
+                        Debug.WriteLine(pathExistsMessage);
+                        DebugViewModel?.AddDebugLog(pathExistsMessage);
+                        var videoFiles = System.IO.Directory.GetFiles(path)
+                            .Where(file => videoExtensions.Contains(System.IO.Path.GetExtension(file).ToLower()))
+                            .ToList();
+                        
+                        string filesFoundMessage = $"[视频攻略] 在 {path} 中找到 {videoFiles.Count} 个视频文件";                        
+                        Debug.WriteLine(filesFoundMessage);
+                        DebugViewModel?.AddDebugLog(filesFoundMessage);
+                        
+                        // 显示找到的每个视频文件的名称
+                        if (videoFiles.Count > 0)
+                        {
+                            DebugViewModel?.AddDebugLog("[视频攻略] 找到的文件列表:");
+                            foreach (var file in videoFiles)
+                            {
+                                DebugViewModel?.AddDebugLog($"  - {System.IO.Path.GetFileName(file)}");
+                            }
+                        }
+                        allVideoFiles.AddRange(videoFiles);
+                    }
+                    else
+                    {
+                        string pathNotExistsMessage = $"[视频攻略] 路径不存在: {path}";
+                        Debug.WriteLine(pathNotExistsMessage);
+                        DebugViewModel?.AddDebugLog(pathNotExistsMessage);
+                    }
+                }
+                
+                // 如果任何路径下有视频文件
+                if (allVideoFiles.Any())
+                {
+                    string totalFilesMessage = $"[视频攻略] 总共找到 {allVideoFiles.Count} 个视频文件，打开视频窗口";                    
+                    Debug.WriteLine(totalFilesMessage);
+                    DebugViewModel?.AddDebugLog(totalFilesMessage);
+                    // 打开视频攻略窗口显示本地视频
+                    var videoGuideWindow = new VideoGuideWindow();
+                    videoGuideWindow.GameName = game.Name;
+                    DebugViewModel?.AddDebugLog("[视频攻略] 打开视频攻略窗口");
+                    videoGuideWindow.Show();
+                    return;
+                }
+                else
+                {
+                    string noFilesMessage = "[视频攻略] 未找到任何视频文件，导航到B站搜索";
+                    Debug.WriteLine(noFilesMessage);
+                    DebugViewModel?.AddDebugLog(noFilesMessage);
+                }
+                
+                // 如果本地没有视频文件，则导航到bilibili进行搜索
+                NavigateToBilibiliSearch(game.Name);
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = "显示视频攻略失败: " + ex.Message;
+                    Debug.WriteLine(errorMessage);
+                    DebugViewModel?.AddDebugLog(errorMessage);
+                // 如果出错，也导航到bilibili
+                NavigateToBilibiliSearch(game.Name);
+            }
+        }
+        
+        /// <summary>
+        /// 导航到bilibili搜索页面
+        /// </summary>
+        /// <param name="gameName">游戏名称</param>
+        private void NavigateToBilibiliSearch(string gameName)
+        {
+            try
+            {
+                // 构建搜索URL
+                string searchUrl = $"https://search.bilibili.com/all?keyword={Uri.EscapeDataString(gameName + " 攻略")}";
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = searchUrl,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("导航到bilibili搜索失败: " + ex.Message);
             }
         }
         
@@ -733,7 +877,7 @@ public class MainWindowViewModel : ViewModelBase
         /// </summary>
         /// <param name="content">广告内容</param>
         /// <param name="link">广告链接</param>
-        public void SetAdContent(string content, string link = null)
+        public void SetAdContent(string content, string link = "")
         {
             AdContent = content;
             if (!string.IsNullOrEmpty(link))

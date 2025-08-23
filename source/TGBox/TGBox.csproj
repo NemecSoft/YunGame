@@ -33,6 +33,9 @@
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.118.0" />
     <!-- Material.Avalonia 主题支持 -->
     <PackageReference Include="Material.Avalonia" Version="3.7.2" />
+    <!-- LibVLCSharp 视频播放支持 -->
+    <PackageReference Include="LibVLCSharp.Avalonia" Version="3.9.4" />
+    <PackageReference Include="LibVLCSharp" Version="3.9.4" />
   </ItemGroup>
 
   <ItemGroup>
